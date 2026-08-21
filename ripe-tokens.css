@@ -1,0 +1,21 @@
+:root {
+  --ripe-surface-base: #050308; --ripe-surface-card: #08050F; --ripe-surface-container-lowest: #100C17;
+  --ripe-surface-container-low: #1E1A25; --ripe-surface-container: #221E2A; --ripe-surface-container-high: #2D2834;
+  --ripe-surface-container-highest: #38323F; --ripe-surface-bright: #3C3744; --ripe-on-surface: #E8DFF0;
+  --ripe-on-surface-variant: #E3BDC5; --ripe-outline: #AA8890; --ripe-outline-variant: #5B3F46;
+  --ripe-primary: #FFB1C5; --ripe-primary-container: #FF4A90; --ripe-on-primary-container: #590029;
+  --ripe-secondary: #FFB598; --ripe-secondary-container: #B14101; --ripe-tertiary: #43E188;
+  --ripe-tertiary-container: #00A65D; --ripe-spot-blue: #3DA9FF; --ripe-error: #FFB4AB; --ripe-error-container: #93000A;
+  --ripe-radius-sm: .25rem; --ripe-radius-default: .5rem; --ripe-radius-md: .75rem; --ripe-radius-lg: 1rem;
+  --ripe-radius-xl: 1.5rem; --ripe-radius-full: 9999px; --ripe-container-max: 1200px; --ripe-gutter: 24px;
+  --ripe-margin-mobile: 20px; --ripe-section-gap: 120px; --ripe-element-gap: 32px;
+}
+[data-theme="daylight"] {
+  --ripe-surface-base: #FDF8F3; --ripe-surface-card: #FFFDFC; --ripe-surface-container-lowest: #F9F0E9;
+  --ripe-surface-container-low: #F3E8DF; --ripe-surface-container: #EDE0D6; --ripe-surface-container-high: #E7D8CD;
+  --ripe-surface-container-highest: #E0CFC3; --ripe-surface-bright: #FFFFFF; --ripe-on-surface: #4A0E2E;
+  --ripe-on-surface-variant: #6D3D54; --ripe-outline: #D8C9BE; --ripe-outline-variant: #E9DDD4;
+  --ripe-primary: #C81E56; --ripe-primary-container: #F4A6BD; --ripe-on-primary-container: #4A0E2E;
+  --ripe-secondary: #F59E0B; --ripe-secondary-container: #FDE3A7; --ripe-tertiary: #4A6048;
+  --ripe-tertiary-container: #D3E3CF; --ripe-spot-blue: #176C9E; --ripe-error: #B3261E; --ripe-error-container: #FFDAD6;
+}
