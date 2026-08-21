@@ -1,0 +1,131 @@
+/* Larger supporting type while preserving RIPE's editorial hierarchy. */
+.brand small {
+  font-size: 11px;
+}
+
+.button {
+  font-size: 11px;
+}
+
+.hero-kicker,
+.issue,
+.eyebrow {
+  font-size: 13px;
+  line-height: 18px;
+}
+
+.hero-meta span {
+  font-size: 11px;
+}
+
+.marquee {
+  font-size: 12px;
+}
+
+.save-state,
+.panel-number {
+  font-size: 12px;
+  line-height: 18px;
+}
+
+label {
+  font-size: 12px;
+  line-height: 18px;
+}
+
+input,
+select {
+  font-size: 15px;
+}
+
+.metric p {
+  font-size: 11px;
+  line-height: 16px;
+}
+
+.metric span {
+  font-size: 12px;
+  line-height: 18px;
+}
+
+.text-button {
+  font-size: 11px;
+}
+
+.formula-strip {
+  font-size: 12px;
+  line-height: 18px;
+}
+
+.data-row input {
+  font-size: 14px;
+}
+
+.breakdown > div {
+  font-size: 13px;
+  line-height: 20px;
+}
+
+.target-number span,
+.target-status {
+  font-size: 11px;
+  line-height: 16px;
+}
+
+#breakEvenDetail {
+  font-size: 14px;
+  line-height: 21px;
+}
+
+.insight-card > p:last-child {
+  font-size: 15px;
+  line-height: 23px;
+}
+
+.guide-card summary {
+  font-size: 14px;
+  line-height: 21px;
+}
+
+.guide-card details p {
+  font-size: 14px;
+  line-height: 22px;
+}
+
+.clear-options button span {
+  font-size: 12px;
+}
+
+.clear-options button small,
+.dialog-intro {
+  font-size: 14px;
+  line-height: 21px;
+}
+
+.toast,
+footer {
+  font-size: 12px;
+  line-height: 18px;
+}
+
+@media (max-width: 720px) {
+  .button {
+    font-size: 10px;
+  }
+
+  .hero-copy > p {
+    font-size: 17px;
+    line-height: 1.65;
+  }
+
+  .hero-meta span,
+  .marquee {
+    font-size: 11px;
+  }
+
+  label,
+  .metric span,
+  .formula-strip {
+    font-size: 12px;
+  }
+}
