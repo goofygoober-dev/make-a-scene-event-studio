@@ -3,7 +3,16 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 
 test('deployable app contains required entry points', () => {
-  for (const file of ['index.html','styles.css','app.js','server.js','railway.json']) assert.equal(fs.existsSync(file), true, `${file} is missing`);
+  for (const file of ['index.html','styles.css','readability.css','app.js','server.js','railway.json']) assert.equal(fs.existsSync(file), true, `${file} is missing`);
+});
+
+test('supporting text uses the enlarged readability scale', () => {
+  const html = fs.readFileSync('index.html','utf8');
+  const css = fs.readFileSync('readability.css','utf8');
+  assert.match(html, /readability\.css\?v=5/);
+  assert.match(css, /#breakEvenDetail[\s\S]*font-size: 14px/);
+  assert.match(css, /\.guide-card details p[\s\S]*font-size: 14px/);
+  assert.match(css, /label[\s\S]*font-size: 12px/);
 });
 
 test('server binds to Railway PORT and calculator has durable browser state', () => {
