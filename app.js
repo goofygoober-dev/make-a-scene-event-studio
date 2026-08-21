@@ -1,6 +1,6 @@
 const STORAGE_KEY = 'make-a-scene-event-studio-v1';
 const defaults = {
-  eventName: 'Community Play Night', eventDate: '2026-09-12', eventVenue: 'Saturday Night Venue',
+  theme: 'night', eventName: 'Community Play Night', eventDate: '2026-09-12', eventVenue: 'Saturday Night Venue',
   modelType: 'PER_PERSON', ratePerHead: 35, minPax: 50, flatFee: 1500, percentage: 30,
   tickets: [
     {name:'Early Bird Single',price:60,guests:1,sold:20},
@@ -71,6 +71,7 @@ function renderSummary(){
 }
 
 function render(){
+  applyTheme(state.theme || 'night');
   ['eventName','eventDate','eventVenue','modelType','ratePerHead','minPax','flatFee','percentage'].forEach(id=>$(id).value=state[id]);
   renderRows('tickets');renderRows('expenses');renderRows('deposits');updateVisibility();renderSummary();
 }
@@ -87,7 +88,25 @@ document.addEventListener('click',event=>{
   if(add){state[add].push(add==='tickets'?{name:'New ticket tier',price:60,guests:1,sold:10}:{name:add==='expenses'?'New production cost':'New venue deposit',date:state.eventDate,amount:add==='expenses'?100:500});renderRows(add);renderSummary();save()}
   if(remove){state[remove].splice(Number(event.target.dataset.index),1);renderRows(remove);renderSummary();save()}
 });
-$('resetButton').addEventListener('click',()=>{if(confirm('Reset this event model to the original example?')){state=structuredClone(defaults);save();render();toast('Model reset')}});
+function applyTheme(theme){
+  state.theme=theme;document.documentElement.dataset.theme=theme;
+  const daylight=theme==='daylight';$('themeButton').textContent=daylight?'Night mode':'Daylight';
+  $('themeButton').setAttribute('aria-label',daylight?'Switch to night mode':'Switch to daylight mode');
+  document.querySelector('meta[name="theme-color"]').content=daylight?'#FDF8F3':'#050308';
+}
+$('themeButton').addEventListener('click',()=>{applyTheme(state.theme==='daylight'?'night':'daylight');save();toast(`${state.theme==='daylight'?'Daylight':'Night'} mode on`)});
+$('clearButton').addEventListener('click',()=>$('clearDialog').showModal());
+$('closeClearButton').addEventListener('click',()=>$('clearDialog').close());
+$('clearDialog').addEventListener('click',event=>{if(event.target===$('clearDialog'))$('clearDialog').close()});
+$('clearDialog').addEventListener('click',event=>{
+  const action=event.target.closest('[data-clear]')?.dataset.clear;if(!action)return;
+  if(action==='sales')state.tickets.forEach(t=>t.sold=0);
+  if(action==='costs'){state.expenses.forEach(e=>e.amount=0);state.deposits.forEach(d=>d.amount=0)}
+  if(action==='all'){state.ratePerHead=0;state.minPax=0;state.flatFee=0;state.percentage=0;state.tickets.forEach(t=>{t.price=0;t.sold=0;t.guests=1});state.expenses.forEach(e=>e.amount=0);state.deposits.forEach(d=>d.amount=0)}
+  if(action==='restore'){const theme=state.theme;state=structuredClone(defaults);state.theme=theme}
+  save();render();$('clearDialog').close();
+  const messages={sales:'Ticket sales cleared',costs:'Costs and deposits cleared',all:'Example numbers cleared',restore:'Example model restored'};toast(messages[action]);
+});
 $('pdfButton').addEventListener('click',()=>window.print());
 $('copyButton').addEventListener('click',async()=>{const c=calculations();const text=`${state.eventName}\n${state.eventDate} · ${state.eventVenue}\n\nGross sales: ${money(c.gross)}\nVenue fee: ${money(c.venue)}\nProduction costs: ${money(c.expenses)}\nNet retained: ${money(c.profit)}\nEvent-day venue balance: ${money(c.day)}`;await navigator.clipboard.writeText(text);toast('Settlement copied')});
 $('csvButton').addEventListener('click',()=>{
