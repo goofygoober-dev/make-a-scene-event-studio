@@ -26,3 +26,12 @@ test('desktop and mobile viewport compositions are shipped', () => {
   assert.match(responsive, /max-width: 430px/);
   assert.match(responsive, /100svh/);
 });
+
+test('weighted ticket-mix break-even target is shipped', () => {
+  const html = fs.readFileSync('index.html','utf8');
+  const app = fs.readFileSync('app.js','utf8');
+  assert.match(html, /id="breakEvenTickets"/);
+  assert.match(html, /aria-label="Progress toward ticket break-even"/);
+  assert.match(app, /function breakEvenForTicketMix/);
+  assert.match(app, /current sales mix/);
+});
