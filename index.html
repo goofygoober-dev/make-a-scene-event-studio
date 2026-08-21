@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f2eadc">
+  <meta name="description" content="Plan ticket revenue, venue costs, expenses and event-day settlements with confidence.">
+  <title>Let's Make A Scene! · Event Calculator Studio</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=JetBrains+Mono:wght@500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <a class="skip-link" href="#workspace">Skip to calculator</a>
+  <header class="site-header no-print">
+    <a class="brand" href="#top" aria-label="Let's Make A Scene home">
+      <span class="brand-mark">LMS</span>
+      <span><strong>Let's Make A Scene!</strong><small>Event Calculator Studio</small></span>
+    </a>
+    <nav class="header-actions" aria-label="Export actions">
+      <button class="button button-quiet" id="resetButton" type="button">Reset</button>
+      <button class="button button-quiet" id="csvButton" type="button">Export CSV</button>
+      <button class="button button-primary" id="pdfButton" type="button">Print / PDF</button>
+    </nav>
+  </header>
+
+  <main id="top">
+    <section class="hero" aria-labelledby="hero-title">
+      <div class="hero-kicker"><span></span> The money, before the moment</div>
+      <div class="hero-grid">
+        <div>
+          <p class="issue">Planning desk · 01</p>
+          <h1 id="hero-title">Make the night<br><em>make sense.</em></h1>
+        </div>
+        <div class="hero-copy">
+          <p>Model ticket sales, venue commitments and production costs in one calm, collaborative workspace.</p>
+          <div class="hero-meta"><span>Live calculations</span><span>Saved locally</span><span>AUD</span></div>
+        </div>
+      </div>
+      <div class="marquee" aria-hidden="true"><span>SELL THE NIGHT</span><i>◆</i><span>KNOW THE NUMBERS</span><i>◆</i><span>SETTLE WITH CONFIDENCE</span></div>
+    </section>
+
+    <section class="workspace" id="workspace">
+      <div class="section-heading">
+        <div><p class="eyebrow">Your event</p><h2>Working model</h2></div>
+        <div class="save-state" id="saveState"><span></span> Saved in this browser</div>
+      </div>
+
+      <section class="panel event-details" aria-labelledby="event-title">
+        <div class="panel-number">00</div>
+        <div class="panel-body">
+          <h3 id="event-title">Event details</h3>
+          <div class="form-grid three">
+            <label>Event name<input id="eventName" type="text" autocomplete="off"></label>
+            <label>Event date<input id="eventDate" type="date"></label>
+            <label>Venue / location<input id="eventVenue" type="text" autocomplete="off"></label>
+          </div>
+        </div>
+      </section>
+
+      <section class="scoreboard" aria-label="Financial summary">
+        <article class="metric metric-feature"><p>Net retained profit</p><strong id="netProfit">$0</strong><span id="profitMargin">0% margin</span></article>
+        <article class="metric"><p>Gross sales</p><strong id="grossSales">$0</strong><span id="attendees">0 attendees</span></article>
+        <article class="metric"><p>Venue fee</p><strong id="venueFee">$0</strong><span id="venueModeLabel">Per person</span></article>
+        <article class="metric"><p>Production</p><strong id="expensesTotal">$0</strong><span>Itemised expenses</span></article>
+        <article class="metric"><p>Due event day</p><strong id="dayBalance">$0</strong><span>After deposits</span></article>
+      </section>
+
+      <div class="calculator-grid">
+        <div class="calculator-main">
+          <section class="panel" aria-labelledby="venue-title">
+            <div class="panel-number">01</div>
+            <div class="panel-body">
+              <div class="panel-title"><div><p class="eyebrow">The commitment</p><h3 id="venue-title">Venue terms</h3></div></div>
+              <div class="form-grid two">
+                <label class="span-2">Pricing structure
+                  <select id="modelType">
+                    <option value="PER_PERSON">Per person + minimum guarantee</option>
+                    <option value="FLAT_FEE">Flat venue hire</option>
+                    <option value="PERCENTAGE_SHARE">Percentage of ticket revenue</option>
+                    <option value="HYBRID">Flat fee + per person</option>
+                  </select>
+                </label>
+                <label data-field="perHead">Rate per guest ($)<input id="ratePerHead" type="number" min="0" step="1"></label>
+                <label data-field="minPax">Minimum guests<input id="minPax" type="number" min="0" step="1"></label>
+                <label data-field="flatFee">Flat fee ($)<input id="flatFee" type="number" min="0" step="1"></label>
+                <label data-field="percentage">Venue share (%)<input id="percentage" type="number" min="0" max="100" step="1"></label>
+              </div>
+              <div class="formula-strip"><span>Minimum commitment</span><strong id="minimumCommitment">$0</strong><span>Deposits paid</span><strong id="depositSummary">$0</strong></div>
+            </div>
+          </section>
+
+          <section class="panel" aria-labelledby="tickets-title">
+            <div class="panel-number">02</div>
+            <div class="panel-body">
+              <div class="panel-title"><div><p class="eyebrow">The audience</p><h3 id="tickets-title">Ticket tiers</h3></div><button class="text-button no-print" data-add="tickets" type="button">+ Add tier</button></div>
+              <div id="ticketsList" class="rows"></div>
+            </div>
+          </section>
+
+          <section class="panel" aria-labelledby="expenses-title">
+            <div class="panel-number">03</div>
+            <div class="panel-body">
+              <div class="panel-title"><div><p class="eyebrow">The production</p><h3 id="expenses-title">Expenses</h3></div><button class="text-button no-print" data-add="expenses" type="button">+ Add expense</button></div>
+              <div id="expensesList" class="rows"></div>
+            </div>
+          </section>
+
+          <section class="panel" aria-labelledby="deposits-title">
+            <div class="panel-number">04</div>
+            <div class="panel-body">
+              <div class="panel-title"><div><p class="eyebrow">The settlement</p><h3 id="deposits-title">Deposit schedule</h3></div><button class="text-button no-print" data-add="deposits" type="button">+ Add deposit</button></div>
+              <div id="depositsList" class="rows"></div>
+            </div>
+          </section>
+        </div>
+
+        <aside class="calculator-side">
+          <section class="breakdown-card">
+            <p class="eyebrow light">Live settlement</p>
+            <h3>The bottom line</h3>
+            <div class="breakdown"><div><span>Gross ticket sales</span><strong id="sumGross">$0</strong></div><div><span>Venue fee</span><strong id="sumVenue">−$0</strong></div><div><span>Production costs</span><strong id="sumExpenses">−$0</strong></div><div class="breakdown-total"><span>Net retained</span><strong id="sumProfit">$0</strong></div></div>
+            <button class="button button-paper no-print" id="copyButton" type="button">Copy settlement summary</button>
+          </section>
+          <section class="insight-card">
+            <p class="eyebrow">Planning signal</p>
+            <strong id="signalTitle">Ready to model</strong>
+            <p id="signalText">Adjust your ticket mix and costs to see how the event performs.</p>
+          </section>
+          <section class="guide-card">
+            <p class="eyebrow">How it works</p>
+            <h3>Simple contract logic</h3>
+            <details open><summary>Per-person venue fee</summary><p>The venue receives the greater of the minimum commitment or attendees × rate per guest.</p></details>
+            <details><summary>Event-day balance</summary><p>Your final cash balance is the venue fee less deposits already paid, never below zero.</p></details>
+            <details><summary>Retained profit</summary><p>Gross ticket sales less venue fee and production expenses.</p></details>
+          </section>
+        </aside>
+      </div>
+    </section>
+  </main>
+
+  <footer><span>Let's Make A Scene!</span><p>Made for better nights and clearer numbers.</p><span>Melbourne · 2026</span></footer>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <script src="app.js"></script>
+</body>
+</html>
