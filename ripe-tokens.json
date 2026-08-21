@@ -1,0 +1,9 @@
+{
+  "color": {
+    "night": {"surface-base":"#050308","surface-card":"#08050F","surface-container-lowest":"#100C17","surface-container-low":"#1E1A25","surface-container":"#221E2A","surface-container-high":"#2D2834","surface-container-highest":"#38323F","surface-bright":"#3C3744","on-surface":"#E8DFF0","on-surface-variant":"#E3BDC5","outline":"#AA8890","outline-variant":"#5B3F46","primary":"#FFB1C5","primary-container":"#FF4A90","on-primary-container":"#590029","secondary":"#FFB598","secondary-container":"#B14101","tertiary":"#43E188","tertiary-container":"#00A65D","spot-blue":"#3DA9FF","error":"#FFB4AB","error-container":"#93000A"},
+    "daylight": {"surface-base":"#FDF8F3","on-surface":"#4A0E2E","primary":"#C81E56","secondary":"#F59E0B","tertiary":"#4A6048","outline":"#D8C9BE"}
+  },
+  "typography": {"display-xl":{"fontFamily":"Outfit","fontWeight":900,"fontSize":"80px","lineHeight":"72px","letterSpacing":"-0.04em"},"headline-lg":{"fontFamily":"Outfit","fontWeight":900,"fontSize":"40px","lineHeight":"44px","letterSpacing":"-0.02em"},"eyebrow":{"fontFamily":"Raleway","fontWeight":200,"fontSize":"12px","lineHeight":"16px","letterSpacing":"0.3em"},"body":{"fontFamily":"Plus Jakarta Sans","fontWeight":400,"fontSize":"16px","lineHeight":"24px"},"accent-tagline":{"fontFamily":"Caveat","fontWeight":400,"fontSize":"24px","lineHeight":"28px"}},
+  "shape": {"radius-sm":"0.25rem","radius-default":"0.5rem","radius-md":"0.75rem","radius-lg":"1rem","radius-xl":"1.5rem","radius-full":"9999px"},
+  "spacing": {"container-max":"1200px","gutter":"24px","margin-mobile":"20px","section-gap":"120px","element-gap":"32px"}
+}
