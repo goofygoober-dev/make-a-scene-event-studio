@@ -27,18 +27,48 @@ function load(){try{return {...structuredClone(defaults),...JSON.parse(localStor
 function save(){localStorage.setItem(STORAGE_KEY,JSON.stringify(state));$('saveState').innerHTML='<span></span> Saved in this browser'}
 function toast(message){const el=$('toast');el.textContent=message;el.classList.add('show');clearTimeout(toast.timer);toast.timer=setTimeout(()=>el.classList.remove('show'),2600)}
 
+function venueFeeFor(attendees,gross){
+  if(state.modelType==='PER_PERSON')return Math.max(num(state.ratePerHead)*num(state.minPax),attendees*num(state.ratePerHead));
+  if(state.modelType==='FLAT_FEE')return num(state.flatFee);
+  if(state.modelType==='PERCENTAGE_SHARE')return gross*(num(state.percentage)/100);
+  if(state.modelType==='HYBRID')return num(state.flatFee)+attendees*num(state.ratePerHead);
+  return 0;
+}
+
+function breakEvenForTicketMix(expenses){
+  const soldTickets=state.tickets.reduce((sum,t)=>sum+num(t.sold),0);
+  const soldRevenue=state.tickets.reduce((sum,t)=>sum+num(t.sold)*num(t.price),0);
+  const soldGuests=state.tickets.reduce((sum,t)=>sum+num(t.sold)*Math.max(1,num(t.guests)),0);
+  const pricedOptions=state.tickets.filter(t=>num(t.price)>0);
+  let averagePrice=0,averageGuests=1,basis='equal blend of ticket tiers';
+  if(soldTickets>0&&soldRevenue>0){
+    averagePrice=soldRevenue/soldTickets;averageGuests=soldGuests/soldTickets;basis='current sales mix';
+  }else if(pricedOptions.length){
+    averagePrice=pricedOptions.reduce((sum,t)=>sum+num(t.price),0)/pricedOptions.length;
+    averageGuests=pricedOptions.reduce((sum,t)=>sum+Math.max(1,num(t.guests)),0)/pricedOptions.length;
+  }
+  if(averagePrice<=0)return {target:null,soldTickets,remaining:null,averagePrice,averageGuests,basis};
+  let target=null;
+  for(let tickets=0;tickets<=100000;tickets++){
+    const projectedGross=tickets*averagePrice;
+    const projectedAttendees=tickets*averageGuests;
+    if(projectedGross>=venueFeeFor(projectedAttendees,projectedGross)+expenses){target=tickets;break}
+  }
+  return {target,soldTickets,remaining:target===null?null:Math.max(0,target-soldTickets),averagePrice,averageGuests,basis};
+}
+
 function calculations(){
   const attendees=state.tickets.reduce((s,t)=>s+num(t.sold)*Math.max(1,num(t.guests)),0);
   const gross=state.tickets.reduce((s,t)=>s+num(t.sold)*num(t.price),0);
   const expenses=state.expenses.reduce((s,e)=>s+num(e.amount),0);
   const deposits=state.deposits.reduce((s,d)=>s+num(d.amount),0);
-  let minimum=0,venue=0;
-  if(state.modelType==='PER_PERSON'){minimum=num(state.ratePerHead)*num(state.minPax);venue=Math.max(minimum,attendees*num(state.ratePerHead))}
-  if(state.modelType==='FLAT_FEE'){minimum=num(state.flatFee);venue=minimum}
-  if(state.modelType==='PERCENTAGE_SHARE'){venue=gross*(num(state.percentage)/100)}
-  if(state.modelType==='HYBRID'){minimum=num(state.flatFee);venue=minimum+attendees*num(state.ratePerHead)}
+  let minimum=0;
+  if(state.modelType==='PER_PERSON')minimum=num(state.ratePerHead)*num(state.minPax);
+  if(state.modelType==='FLAT_FEE'||state.modelType==='HYBRID')minimum=num(state.flatFee);
+  const venue=venueFeeFor(attendees,gross);
   const profit=gross-venue-expenses,day=Math.max(0,venue-deposits),margin=gross?profit/gross*100:0;
-  return {attendees,gross,expenses,deposits,minimum,venue,profit,day,margin};
+  const breakEven=breakEvenForTicketMix(expenses);
+  return {attendees,gross,expenses,deposits,minimum,venue,profit,day,margin,breakEven};
 }
 
 function renderRows(type){
@@ -64,6 +94,19 @@ function renderSummary(){
   $('netProfit').textContent=money(c.profit);$('profitMargin').textContent=`${c.margin.toFixed(1)}% margin`;
   $('dayBalance').textContent=money(c.day);$('minimumCommitment').textContent=money(c.minimum);$('depositSummary').textContent=money(c.deposits);
   $('sumGross').textContent=money(c.gross);$('sumVenue').textContent='−'+money(c.venue);$('sumExpenses').textContent='−'+money(c.expenses);$('sumProfit').textContent=money(c.profit);
+  const be=c.breakEven;
+  $('breakEvenTickets').textContent=be.target===null?'—':be.target.toLocaleString();
+  if(be.target===null){
+    $('breakEvenDetail').textContent='Add ticket prices, or adjust a model whose costs can be covered, to calculate a target.';
+    $('breakEvenStatus').textContent='Target unavailable';$('breakEvenPercent').textContent='0%';$('breakEvenProgress').style.width='0%';
+    $('breakEvenProgress').parentElement.setAttribute('aria-valuenow','0');
+  }else{
+    const progress=be.target===0?100:Math.min(100,(be.soldTickets/be.target)*100);
+    $('breakEvenDetail').textContent=`Based on your ${be.basis}: ${money(be.averagePrice)} average revenue and ${be.averageGuests.toFixed(2)} guests per ticket.`;
+    $('breakEvenStatus').textContent=be.remaining===0?'Break-even reached':`${be.remaining.toLocaleString()} more needed`;
+    $('breakEvenPercent').textContent=`${Math.round(progress)}%`;$('breakEvenProgress').style.width=`${progress}%`;
+    $('breakEvenProgress').parentElement.setAttribute('aria-valuenow',String(Math.round(progress)));
+  }
   const labels={PER_PERSON:'Per person',FLAT_FEE:'Flat hire',PERCENTAGE_SHARE:'Revenue share',HYBRID:'Hybrid fee'};$('venueModeLabel').textContent=labels[state.modelType];
   if(c.profit<0){$('signalTitle').textContent='Costs outrun sales';$('signalText').textContent=`You are ${money(Math.abs(c.profit))} short. Raise sales or trim costs before committing.`}
   else if(c.margin<20){$('signalTitle').textContent='A narrow landing';$('signalText').textContent=`The event is positive, but its ${c.margin.toFixed(1)}% margin leaves little room for surprises.`}
