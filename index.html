@@ -9,9 +9,10 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;900&family=Raleway:wght@200&family=Plus+Jakarta+Sans:wght@300;400;500;600&family=Caveat&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="ripe-tokens.css?v=3">
-  <link rel="stylesheet" href="styles.css?v=3">
-  <link rel="stylesheet" href="responsive.css?v=3">
+  <link rel="stylesheet" href="ripe-tokens.css?v=4">
+  <link rel="stylesheet" href="styles.css?v=4">
+  <link rel="stylesheet" href="responsive.css?v=4">
+  <link rel="stylesheet" href="break-even.css?v=4">
 </head>
 <body>
   <a class="skip-link" href="#workspace">Skip to calculator</a>
@@ -126,6 +127,17 @@
             <div class="breakdown"><div><span>Gross ticket sales</span><strong id="sumGross">$0</strong></div><div><span>Venue fee</span><strong id="sumVenue">−$0</strong></div><div><span>Production costs</span><strong id="sumExpenses">−$0</strong></div><div class="breakdown-total"><span>Net retained</span><strong id="sumProfit">$0</strong></div></div>
             <button class="button button-paper no-print" id="copyButton" type="button">Copy settlement summary</button>
           </section>
+          <section class="target-card" aria-labelledby="target-title">
+            <p class="eyebrow">Break-even target</p>
+            <h3 id="target-title">Tickets needed to cover the event</h3>
+            <div class="target-number"><strong id="breakEvenTickets">—</strong><span>tickets</span></div>
+            <p id="breakEvenDetail">Add ticket prices to calculate a target.</p>
+            <div class="target-status">
+              <span id="breakEvenStatus">Waiting for ticket options</span>
+              <span id="breakEvenPercent">0%</span>
+            </div>
+            <div class="target-track" role="progressbar" aria-label="Progress toward ticket break-even" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><span id="breakEvenProgress"></span></div>
+          </section>
           <section class="insight-card">
             <p class="eyebrow">Planning signal</p>
             <strong id="signalTitle">Ready to model</strong>
@@ -158,6 +170,6 @@
     </div>
   </dialog>
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
-  <script src="app.js?v=3"></script>
+  <script src="app.js?v=4"></script>
 </body>
 </html>
