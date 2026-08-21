@@ -1,25 +1,27 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" data-theme="night">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#f2eadc">
+  <meta name="theme-color" content="#050308">
   <meta name="description" content="Plan ticket revenue, venue costs, expenses and event-day settlements with confidence.">
   <title>Let's Make A Scene! · Event Calculator Studio</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=JetBrains+Mono:wght@500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;900&family=Raleway:wght@200&family=Plus+Jakarta+Sans:wght@300;400;500;600&family=Caveat&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="ripe-tokens.css?v=2">
+  <link rel="stylesheet" href="styles.css?v=2">
 </head>
 <body>
   <a class="skip-link" href="#workspace">Skip to calculator</a>
   <header class="site-header no-print">
     <a class="brand" href="#top" aria-label="Let's Make A Scene home">
-      <span class="brand-mark">LMS</span>
+      <span class="brand-mark">RIPE</span>
       <span><strong>Let's Make A Scene!</strong><small>Event Calculator Studio</small></span>
     </a>
     <nav class="header-actions" aria-label="Export actions">
-      <button class="button button-quiet" id="resetButton" type="button">Reset</button>
+      <button class="button button-quiet" id="themeButton" type="button" aria-label="Switch to daylight mode">Daylight</button>
+      <button class="button button-quiet" id="clearButton" type="button">Clear examples</button>
       <button class="button button-quiet" id="csvButton" type="button">Export CSV</button>
       <button class="button button-primary" id="pdfButton" type="button">Print / PDF</button>
     </nav>
@@ -32,13 +34,14 @@
         <div>
           <p class="issue">Planning desk · 01</p>
           <h1 id="hero-title">Make the night<br><em>make sense.</em></h1>
+          <p class="hero-tagline">good chaos, clear numbers</p>
         </div>
         <div class="hero-copy">
           <p>Model ticket sales, venue commitments and production costs in one calm, collaborative workspace.</p>
           <div class="hero-meta"><span>Live calculations</span><span>Saved locally</span><span>AUD</span></div>
         </div>
       </div>
-      <div class="marquee" aria-hidden="true"><span>SELL THE NIGHT</span><i>◆</i><span>KNOW THE NUMBERS</span><i>◆</i><span>SETTLE WITH CONFIDENCE</span></div>
+      <div class="marquee" aria-hidden="true"><span>SELL THE NIGHT</span><i></i><span>KNOW THE NUMBERS</span><i></i><span>SETTLE WITH CONFIDENCE</span></div>
     </section>
 
     <section class="workspace" id="workspace">
@@ -60,7 +63,7 @@
       </section>
 
       <section class="scoreboard" aria-label="Financial summary">
-        <article class="metric metric-feature"><p>Net retained profit</p><strong id="netProfit">$0</strong><span id="profitMargin">0% margin</span></article>
+        <article class="metric metric-feature"><div class="heat-glow"></div><p>Net retained profit</p><strong id="netProfit">$0</strong><span id="profitMargin">0% margin</span></article>
         <article class="metric"><p>Gross sales</p><strong id="grossSales">$0</strong><span id="attendees">0 attendees</span></article>
         <article class="metric"><p>Venue fee</p><strong id="venueFee">$0</strong><span id="venueModeLabel">Per person</span></article>
         <article class="metric"><p>Production</p><strong id="expensesTotal">$0</strong><span>Itemised expenses</span></article>
@@ -141,7 +144,20 @@
   </main>
 
   <footer><span>Let's Make A Scene!</span><p>Made for better nights and clearer numbers.</p><span>Melbourne · 2026</span></footer>
+  <dialog class="clear-dialog" id="clearDialog" aria-labelledby="clear-title">
+    <div class="dialog-heading">
+      <div><p class="eyebrow">Choose your starting point</p><h2 id="clear-title">Clear example numbers</h2></div>
+      <button class="dialog-close" id="closeClearButton" type="button" aria-label="Close">×</button>
+    </div>
+    <p class="dialog-intro">Keep the useful structure and remove only the sample values you no longer need.</p>
+    <div class="clear-options">
+      <button type="button" data-clear="sales"><span>01</span><strong>Clear ticket sales</strong><small>Sets every “sold” quantity to zero. Prices and costs stay in place.</small></button>
+      <button type="button" data-clear="costs"><span>02</span><strong>Clear costs & deposits</strong><small>Zeros production expenses and venue deposits. Ticket projections stay.</small></button>
+      <button type="button" data-clear="all"><span>03</span><strong>Start with blank numbers</strong><small>Zeros venue terms, ticket prices, sales, costs and deposits.</small></button>
+      <button type="button" data-clear="restore" class="cool-option"><span>↺</span><strong>Restore example model</strong><small>Returns all sample data to the original Community Play Night.</small></button>
+    </div>
+  </dialog>
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
-  <script src="app.js"></script>
+  <script src="app.js?v=2"></script>
 </body>
 </html>
