@@ -17,3 +17,12 @@ test('RIPE tokens and clear-example controls are present', () => {
   assert.match(fs.readFileSync('ripe-tokens.css','utf8'), /--ripe-primary-container: #FF4A90/);
   JSON.parse(fs.readFileSync('ripe-tokens.json','utf8'));
 });
+
+test('desktop and mobile viewport compositions are shipped', () => {
+  const html = fs.readFileSync('index.html','utf8');
+  const responsive = fs.readFileSync('responsive.css','utf8');
+  assert.doesNotMatch(html, /good chaos, clear numbers/i);
+  assert.match(responsive, /min-width: 951px/);
+  assert.match(responsive, /max-width: 430px/);
+  assert.match(responsive, /100svh/);
+});

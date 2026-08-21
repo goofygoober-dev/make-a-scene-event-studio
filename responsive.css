@@ -1,0 +1,116 @@
+/* Dedicated viewport compositions layered on top of the RIPE component styles. */
+@media (min-width: 951px) {
+  .hero {
+    min-height: max(620px, calc(100svh - 84px));
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+
+  .hero-grid {
+    flex: 1;
+  }
+}
+
+@media (max-width: 720px) {
+  .site-header {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 12px;
+    padding: 14px var(--ripe-margin-mobile);
+  }
+
+  .brand {
+    width: 100%;
+  }
+
+  .header-actions {
+    width: 100%;
+    display: grid;
+    grid-template-columns: 0.9fr 1.35fr 0.9fr;
+    gap: 6px;
+  }
+
+  .header-actions .button {
+    min-height: 42px;
+    padding: 9px 7px;
+  }
+
+  .hero {
+    min-height: calc(100svh - 142px);
+    padding-top: 48px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+
+  .hero-grid {
+    flex: 1;
+    align-content: center;
+    gap: 28px;
+    padding: 24px 0 44px;
+  }
+
+  .hero-copy {
+    max-width: 34rem;
+  }
+
+  .hero-copy > p {
+    margin-bottom: 20px;
+  }
+
+  .marquee {
+    justify-content: flex-start;
+    padding-inline: 20px;
+    overflow: hidden;
+  }
+
+  .workspace {
+    width: 100%;
+  }
+}
+
+@media (max-width: 430px) {
+  .brand strong {
+    font-size: 16px;
+  }
+
+  .hero h1 {
+    font-size: clamp(40px, 12.2vw, 52px);
+    line-height: 0.92;
+  }
+
+  .hero-kicker,
+  .issue {
+    letter-spacing: 0.22em;
+  }
+
+  .scoreboard {
+    grid-template-columns: 1fr;
+  }
+
+  .metric-feature {
+    grid-column: auto;
+  }
+
+  .data-row,
+  .data-row.expense {
+    grid-template-columns: 1fr;
+  }
+
+  .data-row label:first-child,
+  .data-row .remove {
+    grid-column: auto;
+  }
+
+  .data-row .remove {
+    justify-self: end;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+  }
+}
