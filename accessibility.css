@@ -1,0 +1,123 @@
+/* Visibility, daylight contrast, and print-legibility safeguards. */
+[hidden] {
+  display: none !important;
+}
+
+html[data-theme="daylight"] {
+  --accessible-ink: #3B0924;
+  --accessible-muted: #54243C;
+  --accessible-heat: #9F123F;
+}
+
+html[data-theme="daylight"] body,
+html[data-theme="daylight"] .button-quiet,
+html[data-theme="daylight"] input,
+html[data-theme="daylight"] select,
+html[data-theme="daylight"] .clear-options button {
+  color: var(--accessible-ink);
+}
+
+html[data-theme="daylight"] label,
+html[data-theme="daylight"] .save-state,
+html[data-theme="daylight"] .metric p,
+html[data-theme="daylight"] .metric span,
+html[data-theme="daylight"] .formula-strip,
+html[data-theme="daylight"] .hero-copy > p,
+html[data-theme="daylight"] .insight-card > p:last-child,
+html[data-theme="daylight"] .guide-card details p,
+html[data-theme="daylight"] .dialog-intro,
+html[data-theme="daylight"] .clear-options button small {
+  color: var(--accessible-muted);
+}
+
+html[data-theme="daylight"] label,
+html[data-theme="daylight"] .save-state,
+html[data-theme="daylight"] .metric p,
+html[data-theme="daylight"] .metric span,
+html[data-theme="daylight"] .formula-strip {
+  font-weight: 500;
+}
+
+html[data-theme="daylight"] .eyebrow,
+html[data-theme="daylight"] .issue,
+html[data-theme="daylight"] .hero-kicker,
+html[data-theme="daylight"] .panel-number,
+html[data-theme="daylight"] .text-button {
+  color: var(--accessible-heat);
+  font-weight: 500;
+}
+
+html[data-theme="daylight"] input,
+html[data-theme="daylight"] select {
+  border-color: #B8979F;
+  font-weight: 600;
+}
+
+html[data-theme="daylight"] .panel,
+html[data-theme="daylight"] .scoreboard,
+html[data-theme="daylight"] .data-row,
+html[data-theme="daylight"] .target-card,
+html[data-theme="daylight"] .insight-card,
+html[data-theme="daylight"] .guide-card {
+  border-color: #C8B2B7;
+}
+
+@media print {
+  :root {
+    --ripe-surface-base: #FFFFFF;
+    --ripe-surface-card: #FFFFFF;
+    --ripe-surface-container-lowest: #FFFFFF;
+    --ripe-surface-container-low: #F5F5F5;
+    --ripe-surface-container: #EEEEEE;
+    --ripe-surface-container-high: #E7E7E7;
+    --ripe-on-surface: #111111;
+    --ripe-on-surface-variant: #2F2F2F;
+    --ripe-primary: #76002D;
+    --ripe-primary-container: #F1C6D3;
+    --ripe-on-primary-container: #111111;
+    --ripe-outline: #666666;
+    --ripe-outline-variant: #999999;
+  }
+
+  body,
+  .panel,
+  .panel-body,
+  .metric,
+  .breakdown-card,
+  .target-card,
+  .data-row,
+  input,
+  select {
+    color: #111111 !important;
+    text-shadow: none !important;
+    box-shadow: none !important;
+  }
+
+  label,
+  .eyebrow,
+  .issue,
+  .panel-number,
+  .metric p,
+  .metric span,
+  .formula-strip,
+  .breakdown > div,
+  #breakEvenDetail,
+  .target-status {
+    color: #222222 !important;
+    font-weight: 600 !important;
+  }
+
+  input,
+  select,
+  .panel,
+  .scoreboard,
+  .data-row,
+  .breakdown-card,
+  .target-card {
+    border-color: #666666 !important;
+  }
+
+  .metric-feature {
+    background: #F1C6D3 !important;
+  }
+}
