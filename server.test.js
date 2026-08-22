@@ -3,7 +3,7 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 
 test('deployable app contains required entry points', () => {
-  for (const file of ['index.html','styles.css','readability.css','app.js','server.js','railway.json']) assert.equal(fs.existsSync(file), true, `${file} is missing`);
+  for (const file of ['index.html','styles.css','readability.css','accessibility.css','app.js','server.js','railway.json']) assert.equal(fs.existsSync(file), true, `${file} is missing`);
 });
 
 test('supporting text uses the enlarged readability scale', () => {
@@ -53,4 +53,24 @@ test('weighted ticket-mix break-even target is shipped', () => {
   assert.match(html, /aria-label="Progress toward ticket break-even"/);
   assert.match(app, /function breakEvenForTicketMix/);
   assert.match(app, /current sales mix/);
+});
+
+test('venue model fields and commitment labels respond to pricing structure', () => {
+  const html = fs.readFileSync('index.html','utf8');
+  const app = fs.readFileSync('app.js','utf8');
+  const css = fs.readFileSync('accessibility.css','utf8');
+  assert.match(html, /id="commitmentLabel"/);
+  assert.match(html, /app\.js\?v=5/);
+  assert.match(app, /PERCENTAGE_SHARE: \{fields:\['percentage'\], commitmentLabel:'Projected venue share'\}/);
+  assert.match(app, /document\.querySelectorAll\('\[data-field\]'\)/);
+  assert.match(css, /\[hidden\][\s\S]*display: none !important/);
+});
+
+test('daylight and print modes ship explicit high-contrast text rules', () => {
+  const html = fs.readFileSync('index.html','utf8');
+  const css = fs.readFileSync('accessibility.css','utf8');
+  assert.match(html, /accessibility\.css\?v=1/);
+  assert.match(css, /html\[data-theme="daylight"\][\s\S]*--accessible-ink: #3B0924/);
+  assert.match(css, /@media print[\s\S]*color: #111111 !important/);
+  assert.match(css, /@media print[\s\S]*border-color: #666666 !important/);
 });
