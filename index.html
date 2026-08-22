@@ -14,6 +14,7 @@
   <link rel="stylesheet" href="responsive.css?v=6">
   <link rel="stylesheet" href="break-even.css?v=5">
   <link rel="stylesheet" href="readability.css?v=5">
+  <link rel="stylesheet" href="accessibility.css?v=1">
 </head>
 <body>
   <a class="skip-link" href="#workspace">Skip to calculator</a>
@@ -92,7 +93,7 @@
                 <label data-field="flatFee">Flat fee ($)<input id="flatFee" type="number" min="0" step="1"></label>
                 <label data-field="percentage">Venue share (%)<input id="percentage" type="number" min="0" max="100" step="1"></label>
               </div>
-              <div class="formula-strip"><span>Minimum commitment</span><strong id="minimumCommitment">$0</strong><span>Deposits paid</span><strong id="depositSummary">$0</strong></div>
+              <div class="formula-strip"><span id="commitmentLabel">Minimum commitment</span><strong id="minimumCommitment">$0</strong><span>Deposits paid</span><strong id="depositSummary">$0</strong></div>
             </div>
           </section>
 
@@ -171,6 +172,6 @@
     </div>
   </dialog>
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
-  <script src="app.js?v=4"></script>
+  <script src="app.js?v=5"></script>
 </body>
 </html>
