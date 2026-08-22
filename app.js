@@ -22,6 +22,12 @@ const $ = id => document.getElementById(id);
 const money = value => new Intl.NumberFormat('en-AU',{style:'currency',currency:'AUD',maximumFractionDigits:0}).format(Number(value)||0);
 const escapeHtml = value => String(value ?? '').replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
 const num = value => Math.max(0, Number(value)||0);
+const venueModelUi = {
+  PER_PERSON: {fields:['perHead','minPax'], commitmentLabel:'Minimum commitment'},
+  FLAT_FEE: {fields:['flatFee'], commitmentLabel:'Flat venue fee'},
+  PERCENTAGE_SHARE: {fields:['percentage'], commitmentLabel:'Projected venue share'},
+  HYBRID: {fields:['flatFee','perHead'], commitmentLabel:'Base venue fee'}
+};
 
 function load(){try{return {...structuredClone(defaults),...JSON.parse(localStorage.getItem(STORAGE_KEY))}}catch{return structuredClone(defaults)}}
 function save(){localStorage.setItem(STORAGE_KEY,JSON.stringify(state));$('saveState').innerHTML='<span></span> Saved in this browser'}
@@ -81,10 +87,9 @@ function renderRows(type){
 
 function updateVisibility(){
   const type=state.modelType;
-  document.querySelector('[data-field="perHead"]').hidden=type==='FLAT_FEE'||type==='PERCENTAGE_SHARE';
-  document.querySelector('[data-field="minPax"]').hidden=type!=='PER_PERSON';
-  document.querySelector('[data-field="flatFee"]').hidden=type==='PER_PERSON'||type==='PERCENTAGE_SHARE';
-  document.querySelector('[data-field="percentage"]').hidden=type!=='PERCENTAGE_SHARE';
+  const config=venueModelUi[type]||venueModelUi.PER_PERSON;
+  document.querySelectorAll('[data-field]').forEach(field=>field.hidden=!config.fields.includes(field.dataset.field));
+  $('commitmentLabel').textContent=config.commitmentLabel;
 }
 
 function renderSummary(){
@@ -92,7 +97,8 @@ function renderSummary(){
   $('grossSales').textContent=money(c.gross);$('attendees').textContent=`${c.attendees} attendees`;
   $('venueFee').textContent=money(c.venue);$('expensesTotal').textContent=money(c.expenses);
   $('netProfit').textContent=money(c.profit);$('profitMargin').textContent=`${c.margin.toFixed(1)}% margin`;
-  $('dayBalance').textContent=money(c.day);$('minimumCommitment').textContent=money(c.minimum);$('depositSummary').textContent=money(c.deposits);
+  const commitment=state.modelType==='PERCENTAGE_SHARE'?c.venue:c.minimum;
+  $('dayBalance').textContent=money(c.day);$('minimumCommitment').textContent=money(commitment);$('depositSummary').textContent=money(c.deposits);
   $('sumGross').textContent=money(c.gross);$('sumVenue').textContent='−'+money(c.venue);$('sumExpenses').textContent='−'+money(c.expenses);$('sumProfit').textContent=money(c.profit);
   const be=c.breakEven;
   $('breakEvenTickets').textContent=be.target===null?'—':be.target.toLocaleString();
