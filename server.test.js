@@ -32,8 +32,18 @@ test('desktop and mobile viewport compositions are shipped', () => {
   const responsive = fs.readFileSync('responsive.css','utf8');
   assert.doesNotMatch(html, /good chaos, clear numbers/i);
   assert.match(responsive, /min-width: 951px/);
-  assert.match(responsive, /max-width: 430px/);
+  assert.match(responsive, /max-width: 560px/);
   assert.match(responsive, /100svh/);
+});
+
+test('mobile fields and cards stay inside a single centred content column', () => {
+  const html = fs.readFileSync('index.html','utf8');
+  const responsive = fs.readFileSync('responsive.css','utf8');
+  assert.match(html, /responsive\.css\?v=6/);
+  assert.match(responsive, /grid-template-columns: 44px minmax\(0, 1fr\)/);
+  assert.match(responsive, /\.panel \{\s*display: block/);
+  assert.match(responsive, /\.form-grid > label,[\s\S]*min-width: 0/);
+  assert.match(responsive, /\.data-row > label,[\s\S]*grid-column: auto/);
 });
 
 test('weighted ticket-mix break-even target is shipped', () => {
