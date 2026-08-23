@@ -2,9 +2,9 @@
   position: relative;
   overflow: hidden;
   padding: 28px;
-  background: var(--ripe-surface-container-low);
-  border: 1px solid var(--ripe-outline-variant);
-  border-radius: var(--ripe-radius-lg);
+  background: var(--scene-surface-container-low);
+  border: 1px solid var(--scene-outline-variant);
+  border-radius: var(--scene-radius-lg);
 }
 
 .target-card::after {
@@ -29,7 +29,7 @@
   display: flex;
   align-items: baseline;
   gap: 9px;
-  color: var(--ripe-primary);
+  color: var(--scene-primary);
 }
 
 .target-number strong {
@@ -46,7 +46,7 @@
 #breakEvenDetail {
   min-height: 54px;
   margin: 15px 0 22px;
-  color: var(--ripe-on-surface-variant);
+  color: var(--scene-on-surface-variant);
   font-size: 12px;
   line-height: 18px;
 }
@@ -56,7 +56,7 @@
   justify-content: space-between;
   gap: 14px;
   margin-bottom: 9px;
-  color: var(--ripe-primary);
+  color: var(--scene-primary);
   text-transform: uppercase;
   letter-spacing: .12em;
   font: 900 9px "Outfit";
@@ -65,8 +65,8 @@
 .target-track {
   height: 7px;
   overflow: hidden;
-  border-radius: var(--ripe-radius-full);
-  background: var(--ripe-surface-container-highest);
+  border-radius: var(--scene-radius-full);
+  background: var(--scene-surface-container-highest);
 }
 
 .target-track span {
@@ -74,7 +74,7 @@
   width: 0;
   height: 100%;
   border-radius: inherit;
-  background: var(--ripe-primary-container);
+  background: var(--scene-primary-container);
   box-shadow: 0 0 18px rgba(255, 74, 144, .45);
   transition: width .3s ease;
 }

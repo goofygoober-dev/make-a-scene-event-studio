@@ -64,19 +64,19 @@ html[data-theme="daylight"] .guide-card {
 
 @media print {
   :root {
-    --ripe-surface-base: #FFFFFF;
-    --ripe-surface-card: #FFFFFF;
-    --ripe-surface-container-lowest: #FFFFFF;
-    --ripe-surface-container-low: #F5F5F5;
-    --ripe-surface-container: #EEEEEE;
-    --ripe-surface-container-high: #E7E7E7;
-    --ripe-on-surface: #111111;
-    --ripe-on-surface-variant: #2F2F2F;
-    --ripe-primary: #76002D;
-    --ripe-primary-container: #F1C6D3;
-    --ripe-on-primary-container: #111111;
-    --ripe-outline: #666666;
-    --ripe-outline-variant: #999999;
+    --scene-surface-base: #FFFFFF;
+    --scene-surface-card: #FFFFFF;
+    --scene-surface-container-lowest: #FFFFFF;
+    --scene-surface-container-low: #F5F5F5;
+    --scene-surface-container: #EEEEEE;
+    --scene-surface-container-high: #E7E7E7;
+    --scene-on-surface: #111111;
+    --scene-on-surface-variant: #2F2F2F;
+    --scene-primary: #76002D;
+    --scene-primary-container: #F1C6D3;
+    --scene-on-primary-container: #111111;
+    --scene-outline: #666666;
+    --scene-outline-variant: #999999;
   }
 
   body,

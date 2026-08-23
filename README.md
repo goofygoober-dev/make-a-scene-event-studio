@@ -1,4 +1,4 @@
-# Let's Make A Scene! — Event Calculator Studio
+# LET'S MAKE A SCENE — Event Calculator Studio
 
 A responsive event budgeting and settlement calculator. Model ticket tiers, venue fee structures, expenses, deposits, profit and event-day cash balance in one place.
 

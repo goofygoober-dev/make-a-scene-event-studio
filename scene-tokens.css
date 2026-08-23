@@ -1,0 +1,21 @@
+:root {
+  --scene-surface-base: #050308; --scene-surface-card: #08050F; --scene-surface-container-lowest: #100C17;
+  --scene-surface-container-low: #1E1A25; --scene-surface-container: #221E2A; --scene-surface-container-high: #2D2834;
+  --scene-surface-container-highest: #38323F; --scene-surface-bright: #3C3744; --scene-on-surface: #E8DFF0;
+  --scene-on-surface-variant: #E3BDC5; --scene-outline: #AA8890; --scene-outline-variant: #5B3F46;
+  --scene-primary: #FFB1C5; --scene-primary-container: #FF4A90; --scene-on-primary-container: #590029;
+  --scene-secondary: #FFB598; --scene-secondary-container: #B14101; --scene-tertiary: #43E188;
+  --scene-tertiary-container: #00A65D; --scene-spot-blue: #3DA9FF; --scene-error: #FFB4AB; --scene-error-container: #93000A;
+  --scene-radius-sm: .25rem; --scene-radius-default: .5rem; --scene-radius-md: .75rem; --scene-radius-lg: 1rem;
+  --scene-radius-xl: 1.5rem; --scene-radius-full: 9999px; --scene-container-max: 1200px; --scene-gutter: 24px;
+  --scene-margin-mobile: 20px; --scene-section-gap: 120px; --scene-element-gap: 32px;
+}
+[data-theme="daylight"] {
+  --scene-surface-base: #FDF8F3; --scene-surface-card: #FFFDFC; --scene-surface-container-lowest: #F9F0E9;
+  --scene-surface-container-low: #F3E8DF; --scene-surface-container: #EDE0D6; --scene-surface-container-high: #E7D8CD;
+  --scene-surface-container-highest: #E0CFC3; --scene-surface-bright: #FFFFFF; --scene-on-surface: #4A0E2E;
+  --scene-on-surface-variant: #6D3D54; --scene-outline: #D8C9BE; --scene-outline-variant: #E9DDD4;
+  --scene-primary: #C81E56; --scene-primary-container: #F4A6BD; --scene-on-primary-container: #4A0E2E;
+  --scene-secondary: #F59E0B; --scene-secondary-container: #FDE3A7; --scene-tertiary: #4A6048;
+  --scene-tertiary-container: #D3E3CF; --scene-spot-blue: #176C9E; --scene-error: #B3261E; --scene-error-container: #FFDAD6;
+}
