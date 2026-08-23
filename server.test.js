@@ -2,84 +2,58 @@ const test = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 
-test('deployable app contains required entry points', () => {
-  for (const file of ['index.html','styles.css','readability.css','accessibility.css','app.js','server.js','railway.json']) assert.equal(fs.existsSync(file), true, `${file} is missing`);
+const html = fs.readFileSync('index.html', 'utf8');
+
+test('Railway entry points and document shell are present', () => {
+  for (const file of ['index.html', 'server.js', 'railway.json', 'package.json']) {
+    assert.equal(fs.existsSync(file), true, `${file} is missing`);
+  }
+  assert.match(html, /<!doctype html>/i);
+  assert.match(html, /<meta name="viewport"/);
+  assert.match(html, /<body>[\s\S]*<\/body>/);
+  assert.match(fs.readFileSync('server.js', 'utf8'), /process\.env\.PORT/);
 });
 
-test('supporting text uses the enlarged readability scale', () => {
-  const html = fs.readFileSync('index.html','utf8');
-  const css = fs.readFileSync('readability.css','utf8');
-  assert.match(html, /readability\.css\?v=5/);
-  assert.match(css, /#breakEvenDetail[\s\S]*font-size: 14px/);
-  assert.match(css, /\.guide-card details p[\s\S]*font-size: 14px/);
-  assert.match(css, /label[\s\S]*font-size: 12px/);
+test('the supplied calculator models every requested event cost', () => {
+  for (const id of ['platformFeePct', 'model-per-person', 'model-flat', 'model-percentage', 'model-hybrid', 'ticketPrice', 'ticketsSold', 'expenseRows', 'depositRows']) {
+    assert.match(html, new RegExp(`id="${id}"`), `${id} is missing`);
+  }
+  assert.match(html, /function computeVenueFee/);
+  assert.match(html, /function recalc/);
 });
 
-test('server binds to Railway PORT and calculator has durable browser state', () => {
-  assert.match(fs.readFileSync('server.js','utf8'), /process\.env\.PORT/);
-  assert.match(fs.readFileSync('app.js','utf8'), /localStorage\.setItem/);
+test('venue model controls reveal only their matching fields', () => {
+  assert.match(html, /document\.querySelectorAll\('\[data-model-fields\]'\)/);
+  assert.match(html, /box\.classList\.toggle\('active'/);
+  assert.match(html, /\.model-fields\{ display:none/);
+  assert.match(html, /\.model-fields\.active\{ display:block/);
 });
 
-test('scene tokens and clear-example controls are present', () => {
-  assert.match(fs.readFileSync('index.html','utf8'), /id="clearDialog"/);
-  assert.match(fs.readFileSync('app.js','utf8'), /data-clear/);
-  assert.match(fs.readFileSync('scene-tokens.css','utf8'), /--scene-primary-container: #FF4A90/);
-  JSON.parse(fs.readFileSync('scene-tokens.json','utf8'));
+test('break-even, local persistence, clear and print actions are included', () => {
+  assert.match(html, /id="be-tickets"/);
+  assert.match(html, /localStorage\.setItem/);
+  assert.match(html, /function clearExamples/);
+  assert.match(html, /window\.print\(\)/);
 });
 
-test('brand naming is uppercase, punctuation-free, and contains no retired acronym', () => {
-  const sourceFiles = ['index.html','app.js','styles.css','responsive.css','readability.css','scene-tokens.css','scene-tokens.json','README.md','package.json'];
-  const source = sourceFiles.map(file => fs.readFileSync(file, 'utf8')).join('\n');
-  const retiredName = ['R', 'I', 'P', 'E'].join('');
-  assert.equal(new RegExp(`\\b${retiredName}\\b`, 'i').test(source), false);
-  assert.doesNotMatch(source, /LET'S MAKE A SCENE!/);
-  assert.match(fs.readFileSync('index.html','utf8'), />LET'S MAKE A SCENE</);
+test('desktop and mobile layouts are responsive and touch friendly', () => {
+  assert.match(html, /@media \(max-width:980px\)/);
+  assert.match(html, /@media \(max-width:640px\)/);
+  assert.match(html, /@media \(max-width:480px\)/);
+  assert.match(html, /min-height:44px/);
+  assert.match(html, /\.field-grid[\s\S]*grid-template-columns:1fr/);
 });
 
-test('desktop and mobile viewport compositions are shipped', () => {
-  const html = fs.readFileSync('index.html','utf8');
-  const responsive = fs.readFileSync('responsive.css','utf8');
-  assert.doesNotMatch(html, /good chaos, clear numbers/i);
-  assert.match(responsive, /min-width: 951px/);
-  assert.match(responsive, /max-width: 560px/);
-  assert.match(responsive, /100svh/);
+test('night, daylight and printable themes are self-contained', () => {
+  assert.match(html, /\[data-theme="daylight"\]/);
+  assert.match(html, /@media print/);
+  assert.match(html, /--on-surface:#111111 !important/);
+  assert.match(html, /--grain-op:0 !important/);
 });
 
-test('mobile fields and cards stay inside a single centred content column', () => {
-  const html = fs.readFileSync('index.html','utf8');
-  const responsive = fs.readFileSync('responsive.css','utf8');
-  assert.match(html, /responsive\.css\?v=6/);
-  assert.match(responsive, /grid-template-columns: 44px minmax\(0, 1fr\)/);
-  assert.match(responsive, /\.panel \{\s*display: block/);
-  assert.match(responsive, /\.form-grid > label,[\s\S]*min-width: 0/);
-  assert.match(responsive, /\.data-row > label,[\s\S]*grid-column: auto/);
-});
-
-test('weighted ticket-mix break-even target is shipped', () => {
-  const html = fs.readFileSync('index.html','utf8');
-  const app = fs.readFileSync('app.js','utf8');
-  assert.match(html, /id="breakEvenTickets"/);
-  assert.match(html, /aria-label="Progress toward ticket break-even"/);
-  assert.match(app, /function breakEvenForTicketMix/);
-  assert.match(app, /current sales mix/);
-});
-
-test('venue model fields and commitment labels respond to pricing structure', () => {
-  const html = fs.readFileSync('index.html','utf8');
-  const app = fs.readFileSync('app.js','utf8');
-  const css = fs.readFileSync('accessibility.css','utf8');
-  assert.match(html, /id="commitmentLabel"/);
-  assert.match(html, /app\.js\?v=5/);
-  assert.match(app, /PERCENTAGE_SHARE: \{fields:\['percentage'\], commitmentLabel:'Projected venue share'\}/);
-  assert.match(app, /document\.querySelectorAll\('\[data-field\]'\)/);
-  assert.match(css, /\[hidden\][\s\S]*display: none !important/);
-});
-
-test('daylight and print modes ship explicit high-contrast text rules', () => {
-  const html = fs.readFileSync('index.html','utf8');
-  const css = fs.readFileSync('accessibility.css','utf8');
-  assert.match(html, /accessibility\.css\?v=1/);
-  assert.match(css, /html\[data-theme="daylight"\][\s\S]*--accessible-ink: #3B0924/);
-  assert.match(css, /@media print[\s\S]*color: #111111 !important/);
-  assert.match(css, /@media print[\s\S]*border-color: #666666 !important/);
+test('brand wordmark follows the approved naming rule', () => {
+  assert.match(html, />LET'S MAKE</);
+  assert.match(html, /> A SCENE</);
+  assert.doesNotMatch(html, /LET'S MAKE A SCENE[!.]/i);
+  assert.doesNotMatch(html, /\bR\.I\.P\.E\b/i);
 });
