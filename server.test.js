@@ -20,11 +20,20 @@ test('server binds to Railway PORT and calculator has durable browser state', ()
   assert.match(fs.readFileSync('app.js','utf8'), /localStorage\.setItem/);
 });
 
-test('RIPE tokens and clear-example controls are present', () => {
+test('scene tokens and clear-example controls are present', () => {
   assert.match(fs.readFileSync('index.html','utf8'), /id="clearDialog"/);
   assert.match(fs.readFileSync('app.js','utf8'), /data-clear/);
-  assert.match(fs.readFileSync('ripe-tokens.css','utf8'), /--ripe-primary-container: #FF4A90/);
-  JSON.parse(fs.readFileSync('ripe-tokens.json','utf8'));
+  assert.match(fs.readFileSync('scene-tokens.css','utf8'), /--scene-primary-container: #FF4A90/);
+  JSON.parse(fs.readFileSync('scene-tokens.json','utf8'));
+});
+
+test('brand naming is uppercase, punctuation-free, and contains no retired acronym', () => {
+  const sourceFiles = ['index.html','app.js','styles.css','responsive.css','readability.css','scene-tokens.css','scene-tokens.json','README.md','package.json'];
+  const source = sourceFiles.map(file => fs.readFileSync(file, 'utf8')).join('\n');
+  const retiredName = ['R', 'I', 'P', 'E'].join('');
+  assert.equal(new RegExp(`\\b${retiredName}\\b`, 'i').test(source), false);
+  assert.doesNotMatch(source, /LET'S MAKE A SCENE!/);
+  assert.match(fs.readFileSync('index.html','utf8'), />LET'S MAKE A SCENE</);
 });
 
 test('desktop and mobile viewport compositions are shipped', () => {
