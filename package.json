@@ -2,7 +2,7 @@
   "name": "make-a-scene-event-studio",
   "version": "1.0.0",
   "private": true,
-  "description": "A polished event financial calculator for Let's Make A Scene!",
+  "description": "A polished event financial calculator for LET'S MAKE A SCENE",
   "scripts": {
     "start": "node server.js",
     "test": "node --test"
