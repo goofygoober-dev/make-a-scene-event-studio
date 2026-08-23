@@ -1,4 +1,4 @@
-/* Dedicated viewport compositions layered on top of the RIPE component styles. */
+/* Dedicated viewport compositions layered on top of the shared component styles. */
 @media (min-width: 951px) {
   .hero {
     min-height: max(620px, calc(100svh - 84px));
@@ -17,7 +17,7 @@
     display: grid;
     grid-template-columns: 1fr;
     gap: 12px;
-    padding: 14px var(--ripe-margin-mobile);
+    padding: 14px var(--scene-margin-mobile);
   }
 
   .brand {
@@ -71,7 +71,7 @@
   .workspace {
     width: 100%;
     max-width: 100%;
-    padding: 64px var(--ripe-margin-mobile);
+    padding: 64px var(--scene-margin-mobile);
     overflow-x: clip;
   }
 
@@ -139,7 +139,7 @@
   }
 
   .workspace {
-    padding-inline: max(16px, var(--ripe-margin-mobile));
+    padding-inline: max(16px, var(--scene-margin-mobile));
   }
 
   .panel {
@@ -149,7 +149,7 @@
   .panel-number {
     padding: 11px 18px;
     border-right: 0;
-    border-bottom: 1px solid var(--ripe-outline-variant);
+    border-bottom: 1px solid var(--scene-outline-variant);
     text-align: center;
   }
 
