@@ -15,11 +15,30 @@ test('Railway entry points and document shell are present', () => {
 });
 
 test('the supplied calculator models every requested event cost', () => {
-  for (const id of ['platformFeePct', 'model-per-person', 'model-flat', 'model-percentage', 'model-hybrid', 'ticketPrice', 'ticketsSold', 'expenseRows', 'depositRows']) {
+  for (const id of ['platformFeePct', 'model-per-person', 'model-flat', 'model-percentage', 'model-hybrid', 'ticketRows', 'addTicket', 'expenseRows', 'depositRows']) {
     assert.match(html, new RegExp(`id="${id}"`), `${id} is missing`);
   }
   assert.match(html, /function computeVenueFee/);
   assert.match(html, /function recalc/);
+});
+
+test('multiple ticket types produce a per-style break-even mix', () => {
+  assert.match(html, /var state = \{ tickets:\[\], expenses:\[\], deposits:\[\] \}/);
+  assert.match(html, /function renderTicketRows/);
+  assert.match(html, /function allocateTicketMix/);
+  assert.match(html, /function findBreakEven/);
+  assert.match(html, /id="be-breakdown"/);
+  assert.match(html, /Uses the mix of ticket types currently sold/);
+});
+
+test('deposits can be included in or added on top of venue cost', () => {
+  assert.match(html, /class="deposit-extra"/);
+  assert.match(html, /addedOnTop/);
+  assert.match(html, /var venueCost = venueFee \+ extraDeposits/);
+  assert.match(html, /var balance = venueFee - includedDeposits/);
+  assert.match(html, /id="out-depositIncluded"/);
+  assert.match(html, /id="out-depositExtra"/);
+  assert.match(html, /What “On top” means:/);
 });
 
 test('venue model controls reveal only their matching fields', () => {
