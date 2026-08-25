@@ -317,13 +317,29 @@
 
   /* ---------- itemized rows (expenses / deposits) ---------- */
   .item-row{ display:grid; grid-template-columns:1.4fr 1fr 1fr auto; gap:10px; align-items:end; margin-bottom:12px; min-width:0; }
+  .item-row.deposit-row{ grid-template-columns:1.2fr .85fr .8fr 1.25fr auto; }
+  .ticket-row{ display:grid; grid-template-columns:1.35fr .8fr .8fr auto; gap:10px; align-items:end; margin-bottom:12px; min-width:0; }
   @media (max-width:640px){ .item-row{ grid-template-columns:1fr; } }
+  @media (max-width:760px){ .item-row.deposit-row, .ticket-row{ grid-template-columns:1fr 1fr; } }
+  @media (max-width:520px){ .item-row.deposit-row, .ticket-row{ grid-template-columns:1fr; } }
   .item-remove{
     all:unset; cursor:pointer; width:44px; height:44px; border-radius:var(--radius-default); border:1px solid var(--border-default);
     color:var(--outline); display:flex; align-items:center; justify-content:center; flex:0 0 auto;
   }
   .item-remove:hover{ color:var(--primary-container); border-color:var(--primary-container); }
   @media (max-width:640px){ .item-remove{ width:100%; } }
+  .deposit-mode{
+    min-height:44px; display:flex; align-items:center; gap:10px; padding:10px 12px; border:1px solid var(--border-default);
+    border-radius:var(--radius-default); background:var(--surface-container-lowest); color:var(--on-surface-variant); cursor:pointer;
+  }
+  .deposit-mode input{ width:18px; height:18px; flex:0 0 auto; accent-color:var(--primary-container); }
+  .deposit-mode span{ font-size:.74rem; line-height:1.35; }
+  .deposit-mode strong{ display:block; color:var(--on-surface); font-family:'Outfit',sans-serif; font-size:.76rem; text-transform:uppercase; }
+  .deposit-subtotals{ display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:6px; }
+  .deposit-subtotals .item-total{ margin-top:0; }
+  .deposit-explainer{ margin:12px 0 0; padding:11px 13px; border-radius:var(--radius-default); background:color-mix(in srgb, var(--primary-container) 7%, var(--surface-container-lowest)); border:1px solid var(--border-subtle); color:var(--on-surface-variant); font-size:.76rem; line-height:1.5; }
+  .deposit-explainer strong{ color:var(--on-surface); }
+  @media (max-width:520px){ .deposit-subtotals{ grid-template-columns:1fr; } }
   .item-total{
     display:flex; align-items:center; justify-content:space-between; gap:12px; padding:12px 16px; margin-top:6px;
     border-radius:var(--radius-default); background:var(--surface-container-lowest); border-left:3px solid var(--primary-container);
@@ -356,6 +372,13 @@
   .be-track{ height:8px; border-radius:var(--radius-full); background:color-mix(in srgb, var(--tertiary-container) 30%, var(--surface-container-lowest)); overflow:hidden; }
   .be-fill{ height:100%; background:var(--tertiary); border-radius:var(--radius-full); transition:width .3s ease; }
   .be-label{ display:flex; justify-content:space-between; margin-top:8px; font-family:'Raleway',sans-serif; font-weight:600; letter-spacing:.08em; text-transform:uppercase; font-size:.62rem; color:var(--outline); }
+  .be-breakdown{ margin-top:18px; padding-top:14px; border-top:1px solid var(--border-subtle); }
+  .be-breakdown-title{ margin:0 0 8px; font-family:'Raleway',sans-serif; font-weight:700; letter-spacing:.1em; text-transform:uppercase; font-size:.62rem; color:var(--outline); }
+  .be-ticket-row{ display:grid; grid-template-columns:minmax(0,1fr) auto; gap:10px; align-items:baseline; padding:7px 0; border-bottom:1px solid var(--border-subtle); }
+  .be-ticket-row:last-child{ border-bottom:0; }
+  .be-ticket-name{ min-width:0; color:var(--on-surface-variant); font-size:.78rem; overflow-wrap:anywhere; }
+  .be-ticket-name small{ color:var(--outline); }
+  .be-ticket-count{ color:var(--tertiary); font-family:'Outfit',sans-serif; font-size:1rem; font-weight:900; white-space:nowrap; }
 
   .signal-msg{ margin:0; font-size:.86rem; color:var(--on-surface-variant); }
 
@@ -577,11 +600,15 @@
                 <p class="panel-eyebrow">The Audience</p>
                 <h3 class="panel-title">Tickets &amp; attendance</h3>
               </div>
+              <button type="button" class="panel-add" id="addTicket">+ Add Ticket Type</button>
             </div>
-            <div class="field-grid cols-3">
-              <div class="field"><label for="ticketPrice">Ticket Price</label><div class="input-wrap"><span class="prefix">$</span><input type="number" id="ticketPrice" class="has-prefix" min="0" step="1" inputmode="decimal"></div></div>
-              <div class="field"><label for="ticketsSold">Tickets Sold</label><input type="number" id="ticketsSold" min="0" step="1" inputmode="numeric"></div>
+            <div id="ticketRows"></div>
+            <div class="field-grid">
               <div class="field"><label for="compGuests">Comp Guests</label><input type="number" id="compGuests" min="0" step="1" inputmode="numeric"></div>
+            </div>
+            <div class="item-total">
+              <span class="k">Ticket sales entered</span>
+              <span class="v" id="out-ticketMix">0 tickets · $0</span>
             </div>
             <p style="margin:14px 0 0; font-size:.78rem; color:var(--outline);">Comp guests (facilitators, staff, performers) count toward attendance and any per-person venue fee, but not toward ticket revenue.</p>
           </div>
@@ -616,10 +643,17 @@
               <button type="button" class="panel-add" id="addDeposit">+ Add Deposit</button>
             </div>
             <div id="depositRows"></div>
-            <div class="item-total">
-              <span class="k">Total deposits paid</span>
-              <span class="v" id="out-depositTotal">$0</span>
+            <div class="deposit-subtotals">
+              <div class="item-total">
+                <span class="k">Included in venue fee</span>
+                <span class="v" id="out-depositIncluded">$0</span>
+              </div>
+              <div class="item-total">
+                <span class="k">Not included · On top</span>
+                <span class="v" id="out-depositExtra">$0</span>
+              </div>
             </div>
+            <p class="deposit-explainer"><strong>What “On top” means:</strong> this deposit is an additional charge beyond the venue fee. It increases the total venue cost and does not reduce the remaining venue balance.</p>
           </div>
         </section>
       </div>
@@ -631,6 +665,7 @@
           <div class="ledger-row"><span class="k">Gross ticket sales</span><span class="v" id="ls-gross">$0</span></div>
           <div class="ledger-row"><span class="k">Platform fees</span><span class="v" id="ls-platform">&minus;$0</span></div>
           <div class="ledger-row"><span class="k">Venue fee</span><span class="v" id="ls-venue">&minus;$0</span></div>
+          <div class="ledger-row"><span class="k">Deposits added on top</span><span class="v" id="ls-depositExtra">&minus;$0</span></div>
           <div class="ledger-row"><span class="k">Production costs</span><span class="v" id="ls-expenses">&minus;$0</span></div>
           <div class="ledger-total"><span class="k">Net retained</span><span class="v" id="ls-net">$0</span></div>
           <button class="btn btn-ghost copy-btn" id="copyBtn">Copy Settlement Summary</button>
@@ -645,6 +680,10 @@
           <p class="be-note" id="be-note">Based on your current ticket price and costs.</p>
           <div class="be-track"><div class="be-fill" id="be-fill" style="width:0%"></div></div>
           <div class="be-label"><span>Break-even reached</span><span id="be-pct">0%</span></div>
+          <div class="be-breakdown">
+            <p class="be-breakdown-title">Minimum sales mix</p>
+            <div id="be-breakdown"></div>
+          </div>
         </div>
 
         <div class="side-card cool">
@@ -689,27 +728,32 @@
   var flatFieldIds = [
     'eventName','eventDate','venueLocation','platformFeePct',
     'pp-guarantee','pp-rate','flat-fee','pct-share','hy-flat','hy-pct',
-    'ticketPrice','ticketsSold','compGuests'
+    'compGuests'
   ];
 
   var examples = {
     flat:{
       eventName:'Winter Rope Social', eventDate:'', venueLocation:'Fitzroy Warehouse', platformFeePct:3,
       'pp-guarantee':100, 'pp-rate':18, 'flat-fee':1800, 'pct-share':20, 'hy-flat':600, 'hy-pct':10,
-      ticketPrice:45, ticketsSold:120, compGuests:8
+      compGuests:8
     },
     pricingModel:'per-person',
+    tickets:[
+      {name:'General admission', price:45, sold:80},
+      {name:'Early bird', price:35, sold:30},
+      {name:'Supporter', price:65, sold:10}
+    ],
     expenses:[
       {desc:'Door & host staff', due:'', amount:280},
       {desc:'Sound & DJ equipment', due:'', amount:220},
       {desc:'Theme decor & supplies', due:'', amount:150}
     ],
     deposits:[
-      {desc:'Date lock-in deposit', due:'', amount:500}
+      {desc:'Date lock-in deposit', due:'', amount:500, addedOnTop:false}
     ]
   };
 
-  var state = { expenses:[], deposits:[] };
+  var state = { tickets:[], expenses:[], deposits:[] };
 
   function $(id){ return document.getElementById(id); }
   function num(id){ var el = $(id); if(!el) return 0; var v = parseFloat(el.value); return isNaN(v) ? 0 : v; }
@@ -742,18 +786,21 @@
     container.innerHTML = '';
     items.forEach(function(item, i){
       var row = document.createElement('div');
-      row.className = 'item-row';
+      row.className = 'item-row' + (kind === 'deposit' ? ' deposit-row' : '');
       row.innerHTML =
         '<div class="field"><label>Description</label><input type="text" class="' + kind + '-desc" placeholder="e.g. ' + (kind==='expense' ? 'Sound & DJ equipment' : 'Deposit') + '"></div>' +
         '<div class="field"><label>Due Date</label><input type="date" class="' + kind + '-due"></div>' +
         '<div class="field"><label>Amount</label><div class="input-wrap"><span class="prefix">$</span><input type="number" class="' + kind + '-amount has-prefix" min="0" step="10" inputmode="decimal"></div></div>' +
+        (kind === 'deposit' ? '<label class="deposit-mode"><input type="checkbox" class="deposit-extra"><span><strong>On top</strong></span></label>' : '') +
         '<button type="button" class="item-remove" aria-label="Remove row">✕</button>';
       row.querySelector('.' + kind + '-desc').value = item.desc || '';
       row.querySelector('.' + kind + '-due').value = item.due || '';
       row.querySelector('.' + kind + '-amount').value = (item.amount === 0 || item.amount) ? item.amount : '';
+      if(kind === 'deposit') row.querySelector('.deposit-extra').checked = item.addedOnTop === true;
       row.querySelector('.' + kind + '-desc').addEventListener('input', function(){ item.desc = this.value; persist(); recalc(); });
       row.querySelector('.' + kind + '-due').addEventListener('input', function(){ item.due = this.value; persist(); recalc(); });
       row.querySelector('.' + kind + '-amount').addEventListener('input', function(){ item.amount = parseFloat(this.value) || 0; persist(); recalc(); });
+      if(kind === 'deposit') row.querySelector('.deposit-extra').addEventListener('change', function(){ item.addedOnTop = this.checked; persist(); recalc(); });
       row.querySelector('.item-remove').addEventListener('click', function(){
         items.splice(i, 1);
         renderRows(containerId, items, kind);
@@ -763,7 +810,7 @@
     });
   }
   function addRow(items, containerId, kind){
-    items.push({desc:'', due:'', amount:0});
+    items.push({desc:'', due:'', amount:0, addedOnTop:false});
     renderRows(containerId, items, kind);
     persist();
     var last = document.querySelector('#' + containerId + ' .item-row:last-child .' + kind + '-desc');
@@ -771,6 +818,39 @@
   }
   function sumItems(items){
     return items.reduce(function(s, i){ return s + (parseFloat(i.amount) || 0); }, 0);
+  }
+
+  function renderTicketRows(){
+    var container = $('ticketRows');
+    container.innerHTML = '';
+    state.tickets.forEach(function(ticket, i){
+      var row = document.createElement('div');
+      row.className = 'ticket-row';
+      row.innerHTML =
+        '<div class="field"><label>Ticket Type</label><input type="text" class="ticket-name" placeholder="e.g. General admission"></div>' +
+        '<div class="field"><label>Price</label><div class="input-wrap"><span class="prefix">$</span><input type="number" class="ticket-price has-prefix" min="0" step="1" inputmode="decimal"></div></div>' +
+        '<div class="field"><label>Sold</label><input type="number" class="ticket-sold" min="0" step="1" inputmode="numeric"></div>' +
+        '<button type="button" class="item-remove" aria-label="Remove ticket type">✕</button>';
+      row.querySelector('.ticket-name').value = ticket.name || '';
+      row.querySelector('.ticket-price').value = (ticket.price === 0 || ticket.price) ? ticket.price : '';
+      row.querySelector('.ticket-sold').value = (ticket.sold === 0 || ticket.sold) ? ticket.sold : '';
+      row.querySelector('.ticket-name').addEventListener('input', function(){ ticket.name = this.value; persist(); recalc(); });
+      row.querySelector('.ticket-price').addEventListener('input', function(){ ticket.price = parseFloat(this.value) || 0; persist(); recalc(); });
+      row.querySelector('.ticket-sold').addEventListener('input', function(){ ticket.sold = Math.max(0, parseInt(this.value, 10) || 0); persist(); recalc(); });
+      row.querySelector('.item-remove').addEventListener('click', function(){
+        state.tickets.splice(i, 1);
+        if(!state.tickets.length) state.tickets.push({name:'General admission', price:0, sold:0});
+        renderTicketRows(); persist(); recalc();
+      });
+      container.appendChild(row);
+    });
+  }
+
+  function addTicket(){
+    state.tickets.push({name:'', price:0, sold:0});
+    renderTicketRows(); persist(); recalc();
+    var last = document.querySelector('#ticketRows .ticket-row:last-child .ticket-name');
+    if(last) last.focus();
   }
 
   function computeVenueFee(model, ticketRevenueNet, attendance){
@@ -791,56 +871,111 @@
     'hybrid':{ title:'Hybrid venue fee', body:'A base flat fee, plus an agreed share of net ticket revenue on top.' }
   };
 
+  function ticketMix(){
+    var valid = state.tickets.map(function(t, index){
+      return {index:index, name:t.name || ('Ticket type ' + (index + 1)), price:Math.max(0, parseFloat(t.price) || 0), sold:Math.max(0, parseInt(t.sold, 10) || 0)};
+    }).filter(function(t){ return t.price > 0; });
+    var soldTotal = valid.reduce(function(sum, t){ return sum + t.sold; }, 0);
+    valid.forEach(function(t){ t.weight = soldTotal > 0 ? t.sold / soldTotal : (valid.length ? 1 / valid.length : 0); });
+    return valid;
+  }
+
+  function allocateTicketMix(total, mix){
+    if(!mix.length || total <= 0) return mix.map(function(){ return 0; });
+    var raw = mix.map(function(t){ return total * t.weight; });
+    var counts = raw.map(function(n){ return Math.floor(n); });
+    var remaining = total - counts.reduce(function(sum, n){ return sum + n; }, 0);
+    raw.map(function(n, i){ return {i:i, fraction:n - Math.floor(n)}; })
+      .sort(function(a, b){ return b.fraction - a.fraction || a.i - b.i; })
+      .slice(0, remaining).forEach(function(x){ counts[x.i] += 1; });
+    return counts;
+  }
+
+  function findBreakEven(model, platformPct, compGuests, otherExpenses, extraDeposits){
+    var mix = ticketMix();
+    if(!mix.length) return {total:0, mix:mix, counts:[], possible:false};
+    function resultAt(total){
+      var counts = allocateTicketMix(total, mix);
+      var gross = counts.reduce(function(sum, count, i){ return sum + count * mix[i].price; }, 0);
+      var netRevenue = gross * (1 - platformPct/100);
+      var venueFee = computeVenueFee(model, netRevenue, total + compGuests);
+      return {profit:netRevenue - venueFee - extraDeposits - otherExpenses, counts:counts};
+    }
+    if(resultAt(0).profit >= 0) return {total:0, mix:mix, counts:allocateTicketMix(0, mix), possible:true};
+    var high = 1;
+    while(high < 10000000 && resultAt(high).profit < 0) high *= 2;
+    if(high >= 10000000 && resultAt(high).profit < 0) return {total:0, mix:mix, counts:[], possible:false};
+    var low = 0;
+    while(low + 1 < high){
+      var mid = Math.floor((low + high) / 2);
+      if(resultAt(mid).profit >= 0) high = mid; else low = mid;
+    }
+    var final = resultAt(high);
+    return {total:high, mix:mix, counts:final.counts, possible:true};
+  }
+
+  function renderBreakEvenMix(result){
+    var container = $('be-breakdown');
+    if(!result.mix.length){
+      container.innerHTML = '<p class="be-note" style="margin:0;">Add a ticket type and price to calculate the sales mix.</p>';
+      return;
+    }
+    if(!result.possible){
+      container.innerHTML = '<p class="be-note" style="margin:0;">These prices and venue terms cannot reach break-even. Raise a ticket price or reduce a cost.</p>';
+      return;
+    }
+    container.innerHTML = result.mix.map(function(ticket, i){
+      return '<div class="be-ticket-row"><span class="be-ticket-name">' + escapeHtml(ticket.name) + ' <small>· ' + money(ticket.price) + '</small></span><span class="be-ticket-count">' + (result.counts[i] || 0).toLocaleString('en-AU') + '</span></div>';
+    }).join('');
+  }
+
+  function escapeHtml(value){
+    return String(value).replace(/[&<>'"]/g, function(ch){ return {'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[ch]; });
+  }
+
   function recalc(){
     var model = getModel();
-    var ticketPrice = num('ticketPrice');
-    var ticketsSold = num('ticketsSold');
     var compGuests = num('compGuests');
     var platformPct = num('platformFeePct');
 
-    var gross = ticketPrice * ticketsSold;
+    var ticketsSold = state.tickets.reduce(function(sum, ticket){ return sum + Math.max(0, parseInt(ticket.sold, 10) || 0); }, 0);
+    var gross = state.tickets.reduce(function(sum, ticket){ return sum + Math.max(0, parseFloat(ticket.price) || 0) * Math.max(0, parseInt(ticket.sold, 10) || 0); }, 0);
     var platformFees = gross * (platformPct/100);
     var netRevenue = gross - platformFees;
     var attendance = ticketsSold + compGuests;
 
     var venueFee = computeVenueFee(model, netRevenue, attendance);
-    var minCommitment = model === 'per-person' ? num('pp-guarantee') * num('pp-rate') : venueFee;
-
     var otherExpenses = sumItems(state.expenses);
-    var totalDeposits = sumItems(state.deposits);
-    var totalExpenses = venueFee + otherExpenses;
+    var includedDeposits = state.deposits.reduce(function(sum, deposit){ return sum + (deposit.addedOnTop ? 0 : (parseFloat(deposit.amount) || 0)); }, 0);
+    var extraDeposits = state.deposits.reduce(function(sum, deposit){ return sum + (deposit.addedOnTop ? (parseFloat(deposit.amount) || 0) : 0); }, 0);
+    var venueCost = venueFee + extraDeposits;
+    var minCommitment = (model === 'per-person' ? num('pp-guarantee') * num('pp-rate') : venueFee) + extraDeposits;
+    var totalExpenses = venueCost + otherExpenses;
     var netProfit = netRevenue - totalExpenses;
     var margin = netRevenue > 0 ? (netProfit/netRevenue*100) : 0;
-    var balance = venueFee - totalDeposits;
-
-    var breakEven = 0, breakEvenNote = 'Assumes the venue fee stays fixed at today’s attendance.';
-    var priceAfterPlatform = ticketPrice * (1 - platformPct/100);
-    if(model === 'percentage' || model === 'hybrid'){
-      var pct = model === 'percentage' ? num('pct-share') : num('hy-pct');
-      var baseFixed = otherExpenses + (model === 'hybrid' ? num('hy-flat') : 0);
-      var denom = priceAfterPlatform * (1 - pct/100);
-      breakEven = denom > 0 ? Math.ceil(baseFixed/denom) : 0;
-      breakEvenNote = 'Includes the venue’s ' + (isFinite(pct)?pct:0) + '% cut of every ticket.';
-    } else {
-      breakEven = priceAfterPlatform > 0 ? Math.ceil((venueFee + otherExpenses)/priceAfterPlatform) : 0;
-    }
-    if(!isFinite(breakEven) || breakEven < 0) breakEven = 0;
+    var balance = venueFee - includedDeposits;
+    var breakEvenResult = findBreakEven(model, platformPct, compGuests, otherExpenses, extraDeposits);
+    var breakEven = breakEvenResult.total;
+    var breakEvenNote = breakEvenResult.possible ? (ticketsSold > 0 ? 'Uses the mix of ticket types currently sold.' : 'Uses an even mix across priced ticket types.') : 'Add viable ticket prices to calculate break-even.';
 
     $('out-netProfit').textContent = money(netProfit);
     $('out-margin').textContent = (isFinite(margin) ? margin.toFixed(1) : '0.0') + '% margin';
     $('out-gross').textContent = money(gross);
     $('out-attendance').textContent = attendance.toLocaleString('en-AU') + ' attendees';
-    $('out-venueFee').textContent = money(venueFee);
-    $('out-venueFeeNote').textContent = model === 'per-person' ? 'per person' : model === 'flat' ? 'flat fee' : model === 'percentage' ? '% of revenue' : 'base + %';
+    $('out-venueFee').textContent = money(venueCost);
+    $('out-venueFeeNote').textContent = (model === 'per-person' ? 'per person' : model === 'flat' ? 'flat fee' : model === 'percentage' ? '% of revenue' : 'base + %') + (extraDeposits ? ' + extra deposit' : '');
     $('out-expenses').textContent = money(otherExpenses);
     $('out-balance').textContent = money(balance);
     $('out-minCommitment').textContent = money(minCommitment);
     $('out-expenseTotal').textContent = money(otherExpenses);
-    $('out-depositTotal').textContent = money(totalDeposits);
+    $('out-depositIncluded').textContent = money(includedDeposits);
+    $('out-depositExtra').textContent = money(extraDeposits);
+    $('out-ticketMix').textContent = ticketsSold.toLocaleString('en-AU') + ' tickets · ' + money(gross);
 
     $('ls-gross').textContent = money(gross);
     $('ls-platform').textContent = '−' + money(platformFees);
     $('ls-venue').textContent = '−' + money(venueFee);
+    $('ls-depositExtra').textContent = '−' + money(extraDeposits);
     $('ls-expenses').textContent = '−' + money(otherExpenses);
     $('ls-net').textContent = money(netProfit);
 
@@ -849,6 +984,7 @@
     var bePct = breakEven > 0 ? Math.min(100, (ticketsSold/breakEven)*100) : (ticketsSold > 0 ? 100 : 0);
     $('be-fill').style.width = bePct.toFixed(0) + '%';
     $('be-pct').textContent = bePct.toFixed(0) + '%';
+    renderBreakEvenMix(breakEvenResult);
 
     var sTitle = $('signal-title'), sMsg = $('signal-msg');
     if(gross === 0 && otherExpenses === 0){
@@ -872,24 +1008,28 @@
     $('how-title').textContent = how.title;
     $('how-body').textContent = how.body;
 
-    $('copyFallback').value = buildSummary(gross, platformFees, venueFee, otherExpenses, netProfit, margin, balance);
+    $('copyFallback').value = buildSummary(gross, platformFees, venueFee, extraDeposits, includedDeposits, otherExpenses, netProfit, margin, balance, breakEvenResult);
   }
 
-  function buildSummary(gross, platformFees, venueFee, otherExpenses, netProfit, margin, balance){
+  function buildSummary(gross, platformFees, venueFee, extraDeposits, includedDeposits, otherExpenses, netProfit, margin, balance, breakEvenResult){
     var name = $('eventName').value || 'This event';
+    var mixLines = breakEvenResult.possible ? breakEvenResult.mix.map(function(ticket, i){ return '  ' + ticket.name + ': ' + (breakEvenResult.counts[i] || 0) + ' tickets at ' + money(ticket.price); }).join('\n') : '  Break-even mix unavailable';
     return name + ' — settlement summary\n' +
       'Gross ticket sales: ' + money(gross) + '\n' +
       'Platform fees: −' + money(platformFees) + '\n' +
       'Venue fee: −' + money(venueFee) + '\n' +
+      'Deposits included in venue fee: ' + money(includedDeposits) + '\n' +
+      'Deposits added on top: −' + money(extraDeposits) + '\n' +
       'Production costs: −' + money(otherExpenses) + '\n' +
       'Net retained: ' + money(netProfit) + ' (' + margin.toFixed(1) + '% margin)\n' +
-      'Due event day: ' + money(balance);
+      'Due event day: ' + money(balance) + '\n' +
+      'Break-even target: ' + (breakEvenResult.possible ? breakEvenResult.total + ' tickets' : 'Unavailable') + '\n' + mixLines;
   }
 
   function persist(){
     var flat = { pricingModel: getModel() };
     flatFieldIds.forEach(function(id){ flat[id] = $(id).value; });
-    var payload = { flat: flat, expenses: state.expenses, deposits: state.deposits };
+    var payload = { flat: flat, tickets: state.tickets, expenses: state.expenses, deposits: state.deposits };
     try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(payload)); }catch(e){}
     updateStatusPills(false);
   }
@@ -910,8 +1050,10 @@
   function clearExamples(){
     flatFieldIds.forEach(function(id){ $(id).value = ''; });
     setModel('per-person');
+    state.tickets = [{name:'General admission', price:0, sold:0}];
     state.expenses = [];
     state.deposits = [];
+    renderTicketRows();
     renderRows('expenseRows', state.expenses, 'expense');
     renderRows('depositRows', state.deposits, 'deposit');
     try{ localStorage.removeItem(STORAGE_KEY); }catch(e){}
@@ -925,15 +1067,22 @@
     try{ saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null'); }catch(e){}
     if(saved){
       loadFlat(saved.flat || {});
+      state.tickets = saved.tickets && saved.tickets.length ? saved.tickets : [{
+        name:'General admission',
+        price:parseFloat(saved.flat && saved.flat.ticketPrice) || 0,
+        sold:parseInt(saved.flat && saved.flat.ticketsSold, 10) || 0
+      }];
       state.expenses = saved.expenses || [];
-      state.deposits = saved.deposits || [];
+      state.deposits = (saved.deposits || []).map(function(deposit){ return Object.assign({addedOnTop:false}, deposit); });
       updateStatusPills(false);
     } else {
       loadFlat(Object.assign({pricingModel:examples.pricingModel}, examples.flat));
+      state.tickets = examples.tickets.map(function(x){ return Object.assign({}, x); });
       state.expenses = examples.expenses.map(function(x){ return Object.assign({}, x); });
       state.deposits = examples.deposits.map(function(x){ return Object.assign({}, x); });
       updateStatusPills(true);
     }
+    renderTicketRows();
     renderRows('expenseRows', state.expenses, 'expense');
     renderRows('depositRows', state.deposits, 'deposit');
     recalc();
@@ -948,6 +1097,7 @@
     $('printBtn').addEventListener('click', function(){ window.print(); });
     $('addExpense').addEventListener('click', function(){ addRow(state.expenses, 'expenseRows', 'expense'); recalc(); });
     $('addDeposit').addEventListener('click', function(){ addRow(state.deposits, 'depositRows', 'deposit'); recalc(); });
+    $('addTicket').addEventListener('click', addTicket);
     $('copyBtn').addEventListener('click', copySummary);
   }
 
