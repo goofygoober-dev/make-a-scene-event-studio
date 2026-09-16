@@ -31,6 +31,17 @@ test('multiple ticket types produce a per-style break-even mix', () => {
   assert.match(html, /Uses the mix of ticket types currently sold/);
 });
 
+test('ticket profit breakdown reconciles expenses and profit by tier', () => {
+  for (const id of ['ticket-profit-breakdown', 'profit-expenses', 'profit-result', 'ticket-profit-list']) {
+    assert.match(html, new RegExp(`id="${id}"`), `${id} is missing`);
+  }
+  assert.match(html, /function renderTicketProfitBreakdown/);
+  assert.match(html, /allocatedCosts = totalCosts \* \(ticket\.revenue \/ gross\)/);
+  assert.match(html, /renderTicketProfitBreakdown\(gross, platformFees \+ totalExpenses, netProfit\)/);
+  assert.match(html, /Expenses per ticket/);
+  assert.match(html, /profitPerTicket = tierProfit \/ ticket\.sold/);
+});
+
 test('deposits can be included in or added on top of venue cost', () => {
   assert.match(html, /class="deposit-extra"/);
   assert.match(html, /addedOnTop/);
