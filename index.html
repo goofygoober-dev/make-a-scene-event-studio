@@ -380,6 +380,28 @@
   .be-ticket-name small{ color:var(--outline); }
   .be-ticket-count{ color:var(--tertiary); font-family:'Outfit',sans-serif; font-size:1rem; font-weight:900; white-space:nowrap; }
 
+  .profit-split{ display:grid; grid-template-columns:1fr 1fr; gap:10px; margin:2px 0 14px; }
+  .profit-split-stat{ padding:12px; border:1px solid var(--border-subtle); border-radius:var(--radius-default); background:var(--surface-container-low); min-width:0; }
+  .profit-split-stat .label{ display:block; color:var(--outline); font-family:'Raleway',sans-serif; font-size:.58rem; font-weight:700; letter-spacing:.1em; text-transform:uppercase; }
+  .profit-split-stat .amount{ display:block; margin-top:5px; font-family:'Outfit',sans-serif; font-size:1.15rem; font-weight:900; font-variant-numeric:tabular-nums; overflow-wrap:anywhere; }
+  .profit-split-stat.profit .amount{ color:var(--tertiary); }
+  .profit-split-stat.loss .amount{ color:var(--error); }
+  .profit-track{ display:flex; height:10px; overflow:hidden; border-radius:var(--radius-full); background:var(--surface-container-high); }
+  .profit-track-expenses{ background:var(--primary-container); transition:width .3s ease; }
+  .profit-track-retained{ background:var(--tertiary); transition:width .3s ease; }
+  .profit-legend{ display:flex; justify-content:space-between; gap:12px; margin:8px 0 16px; color:var(--outline); font-family:'Raleway',sans-serif; font-size:.58rem; font-weight:600; letter-spacing:.06em; text-transform:uppercase; }
+  .ticket-profit-list{ border-top:1px solid var(--border-subtle); }
+  .ticket-profit-row{ padding:12px 0; border-bottom:1px solid var(--border-subtle); }
+  .ticket-profit-row:last-child{ border-bottom:0; padding-bottom:0; }
+  .ticket-profit-head{ display:flex; align-items:baseline; justify-content:space-between; gap:10px; }
+  .ticket-profit-name{ color:var(--on-surface); font-size:.82rem; font-weight:700; overflow-wrap:anywhere; }
+  .ticket-profit-sales{ color:var(--outline); font-size:.68rem; white-space:nowrap; }
+  .ticket-profit-values{ display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:7px; }
+  .ticket-profit-value{ color:var(--on-surface-variant); font-size:.7rem; }
+  .ticket-profit-value strong{ display:block; margin-top:2px; color:var(--on-surface); font-family:'Outfit',sans-serif; font-size:.9rem; font-weight:900; }
+  .ticket-profit-value.retained strong{ color:var(--tertiary); }
+  .ticket-profit-value.loss strong{ color:var(--error); }
+
   .signal-msg{ margin:0; font-size:.86rem; color:var(--on-surface-variant); }
 
   .accordion{ border-top:1px solid var(--border-subtle); }
@@ -673,6 +695,28 @@
           <p class="copy-status" id="copyStatus"></p>
         </div>
 
+        <div class="side-card" id="ticket-profit-breakdown">
+          <span class="cap">Ticket Profit Breakdown</span>
+          <h3 class="display" style="font-size:1.1rem;">Where every ticket dollar goes</h3>
+          <div class="profit-split">
+            <div class="profit-split-stat">
+              <span class="label">To expenses</span>
+              <span class="amount" id="profit-expenses">$0</span>
+            </div>
+            <div class="profit-split-stat profit" id="profit-result-card">
+              <span class="label" id="profit-result-label">To profit</span>
+              <span class="amount" id="profit-result">$0</span>
+            </div>
+          </div>
+          <div class="profit-track" aria-label="Ticket revenue allocation">
+            <div class="profit-track-expenses" id="profit-expense-bar" style="width:0%"></div>
+            <div class="profit-track-retained" id="profit-retained-bar" style="width:0%"></div>
+          </div>
+          <div class="profit-legend"><span id="profit-expense-pct">Expenses 0%</span><span id="profit-retained-pct">Profit 0%</span></div>
+          <p class="be-note" id="profit-breakdown-note">Add ticket sales to see how revenue is divided.</p>
+          <div class="ticket-profit-list" id="ticket-profit-list"></div>
+        </div>
+
         <div class="side-card cool">
           <span class="cap">Break-Even Target</span>
           <h3 class="display" style="font-size:1.1rem;">Tickets needed to cover the event</h3>
@@ -929,6 +973,53 @@
     }).join('');
   }
 
+  function renderTicketProfitBreakdown(gross, totalCosts, netProfit){
+    var expenseShare = gross > 0 ? Math.min(100, totalCosts / gross * 100) : 0;
+    var profitShare = gross > 0 ? Math.max(0, netProfit / gross * 100) : 0;
+    var resultCard = $('profit-result-card');
+    var isLoss = netProfit < 0;
+
+    $('profit-expenses').textContent = money(totalCosts);
+    $('profit-result-label').textContent = isLoss ? 'Event shortfall' : 'To profit';
+    $('profit-result').textContent = money(isLoss ? Math.abs(netProfit) : netProfit);
+    resultCard.classList.toggle('profit', !isLoss);
+    resultCard.classList.toggle('loss', isLoss);
+    $('profit-expense-bar').style.width = expenseShare.toFixed(1) + '%';
+    $('profit-retained-bar').style.width = profitShare.toFixed(1) + '%';
+    $('profit-expense-pct').textContent = 'Expenses ' + expenseShare.toFixed(1) + '%';
+    $('profit-retained-pct').textContent = isLoss ? 'Profit 0%' : 'Profit ' + profitShare.toFixed(1) + '%';
+
+    var soldTiers = state.tickets.map(function(ticket, index){
+      var sold = Math.max(0, parseInt(ticket.sold, 10) || 0);
+      var price = Math.max(0, parseFloat(ticket.price) || 0);
+      return {name:ticket.name || ('Ticket type ' + (index + 1)), sold:sold, price:price, revenue:sold * price};
+    }).filter(function(ticket){ return ticket.sold > 0 && ticket.revenue > 0; });
+
+    if(!soldTiers.length || gross <= 0){
+      $('profit-breakdown-note').textContent = 'Add ticket sales to see how revenue is divided.';
+      $('ticket-profit-list').innerHTML = '';
+      return;
+    }
+
+    $('profit-breakdown-note').textContent = isLoss
+      ? 'Expenses exceed ticket income by ' + money(Math.abs(netProfit)) + '. Costs are allocated to each tier in proportion to its sales revenue.'
+      : 'Costs are allocated to each tier in proportion to its sales revenue. Each figure is an estimate for planning.';
+
+    $('ticket-profit-list').innerHTML = soldTiers.map(function(ticket){
+      var allocatedCosts = totalCosts * (ticket.revenue / gross);
+      var tierProfit = ticket.revenue - allocatedCosts;
+      var costPerTicket = allocatedCosts / ticket.sold;
+      var profitPerTicket = tierProfit / ticket.sold;
+      return '<div class="ticket-profit-row">' +
+        '<div class="ticket-profit-head"><span class="ticket-profit-name">' + escapeHtml(ticket.name) + '</span><span class="ticket-profit-sales">' + ticket.sold.toLocaleString('en-AU') + ' sold · ' + money(ticket.revenue) + '</span></div>' +
+        '<div class="ticket-profit-values">' +
+          '<span class="ticket-profit-value">Expenses per ticket<strong>' + money(costPerTicket) + '</strong></span>' +
+          '<span class="ticket-profit-value ' + (profitPerTicket < 0 ? 'loss' : 'retained') + '">' + (profitPerTicket < 0 ? 'Loss' : 'Profit') + ' per ticket<strong>' + money(profitPerTicket) + '</strong></span>' +
+        '</div>' +
+      '</div>';
+    }).join('');
+  }
+
   function escapeHtml(value){
     return String(value).replace(/[&<>'"]/g, function(ch){ return {'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[ch]; });
   }
@@ -978,6 +1069,7 @@
     $('ls-depositExtra').textContent = '−' + money(extraDeposits);
     $('ls-expenses').textContent = '−' + money(otherExpenses);
     $('ls-net').textContent = money(netProfit);
+    renderTicketProfitBreakdown(gross, platformFees + totalExpenses, netProfit);
 
     $('be-tickets').innerHTML = breakEven.toLocaleString('en-AU') + '<span class="unit">tickets</span>';
     $('be-note').textContent = breakEvenNote;
