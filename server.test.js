@@ -1,89 +1,126 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
+const C = require('./calc.js');
 
 const html = fs.readFileSync('index.html', 'utf8');
 
-test('Railway entry points and document shell are present', () => {
-  for (const file of ['index.html', 'server.js', 'railway.json', 'package.json']) {
+/* Worked by hand:
+   gross 30×$80 + 10×$140 = $3,800; people 30 + 10×2 = 50; +5 comps = 55
+   venue max(50,55)×$35 = $1,925; on-top deposit $100; production $700
+   profit 3,800 − 1,925 − 100 − 700 = $1,075 (28.3%) */
+const base = () => ({
+  platformFeePct: 0,
+  model: 'per-person',
+  pp: { guarantee: 50, rate: 35 },
+  compGuests: 5,
+  tickets: [
+    { name: 'Single', price: 80, people: 1, sold: 30 },
+    { name: 'Couple pass', price: 140, people: 2, sold: 10 }
+  ],
+  expenses: [{ desc: 'Staff', amount: 400 }, { desc: 'Decor', amount: 300 }],
+  deposits: [{ desc: 'Date lock', amount: 500, onTop: false }, { desc: 'Cleaning bond', amount: 100, onTop: true }]
+});
+
+test('people per ticket drives attendance and the per-head venue fee', () => {
+  const r = C.compute(base());
+  assert.equal(r.gross, 3800);
+  assert.equal(r.ticketsSold, 40);
+  assert.equal(r.payingPeople, 50);
+  assert.equal(r.attendance, 55);
+  assert.equal(r.venueFee, 1925);
+});
+
+test('settlement reconciles deposits, production and profit', () => {
+  const r = C.compute(base());
+  assert.equal(r.venueCost, 2025);
+  assert.equal(r.production, 700);
+  assert.equal(r.netProfit, 1075);
+  assert.equal(r.balanceDue, 1425);
+  assert.equal(Math.round(r.margin * 10) / 10, 28.3);
+  assert.equal(r.signal.key, 'strong');
+});
+
+test('break-even keeps the ticket mix and counts pairs as two people', () => {
+  const r = C.compute(base());
+  assert.equal(r.breakEven.possible, true);
+  assert.equal(r.breakEven.tickets, 27);
+  assert.deepEqual(r.breakEven.counts, [20, 7]);
+  assert.equal(r.breakEven.people, 34);
+});
+
+test('platform fees come off gross before percentage venue shares', () => {
+  const s = base();
+  s.platformFeePct = 5;
+  s.model = 'percentage';
+  s.pct = { share: 40 };
+  const r = C.compute(s);
+  assert.equal(r.platformFees, 190);
+  assert.equal(r.venueFee, (3800 - 190) * 0.4);
+  s.model = 'hybrid';
+  s.hybrid = { base: 500, share: 10 };
+  assert.equal(C.compute(s).venueFee, 500 + 361);
+  s.model = 'flat';
+  s.flat = { fee: 1750 };
+  assert.equal(C.compute(s).venueFee, 1750);
+});
+
+test('loss, tight, capacity and empty states map to Rabbit moods', () => {
+  const loss = base();
+  loss.expenses = [{ amount: 3000 }];
+  assert.equal(C.compute(loss).signal.mood, 'thinking');
+  assert.equal(C.compute(loss).signal.label, 'Loss');
+
+  const tight = base();
+  tight.expenses = [{ amount: 1500 }]; // profit $275 = 7.2%
+  assert.equal(C.compute(tight).signal.key, 'tight');
+
+  const full = base();
+  full.capacity = 50;
+  assert.equal(C.compute(full).overCapacity, true);
+  assert.equal(C.compute(full).signal.key, 'capacity');
+
+  assert.equal(C.compute({ tickets: [] }).signal.key, 'empty');
+});
+
+test('per-tier breakdown allocates every cost dollar', () => {
+  const r = C.compute(base());
+  const allocated = r.tiers.reduce((s, t) => s + t.costPerTicket * t.sold, 0);
+  assert.ok(Math.abs(allocated - r.totalCosts) < 0.01);
+  const profit = r.tiers.reduce((s, t) => s + t.profitPerTicket * t.sold, 0);
+  assert.ok(Math.abs(profit - r.netProfit) < 0.01);
+});
+
+test('saved data from the previous live version migrates', () => {
+  const m = C.migrate({
+    flat: { eventName: 'Play Night', platformFeePct: '3', pricingModel: 'per-person', 'pp-guarantee': '40', 'pp-rate': '35', compGuests: '4' },
+    tickets: [{ name: 'Couple Pair 1', price: 75, sold: 15 }, { name: 'Single Man', price: 85, sold: 7 }],
+    expenses: [{ desc: 'Performer', due: '2026-10-01', amount: 300 }],
+    deposits: [{ desc: 'Deposit', due: '', amount: 500, addedOnTop: true }]
+  });
+  assert.equal(m.version, 8);
+  assert.equal(m.tickets[0].people, 2);
+  assert.equal(m.tickets[1].people, 1);
+  assert.equal(m.deposits[0].onTop, true);
+  assert.equal(m.pp.guarantee, '40');
+});
+
+test('money uses a true minus sign', () => {
+  assert.equal(C.money(-400), '−$400');
+  assert.equal(C.money(1470), '$1,470');
+});
+
+test('page shell, brand system and accessibility hooks are present', () => {
+  for (const file of ['index.html', 'calc.js', 'server.js', 'railway.json', 'package.json']) {
     assert.equal(fs.existsSync(file), true, `${file} is missing`);
   }
-  assert.match(html, /<!doctype html>/i);
-  assert.match(html, /<meta name="viewport"/);
-  assert.match(html, /<body>[\s\S]*<\/body>/);
-  assert.match(fs.readFileSync('server.js', 'utf8'), /process\.env\.PORT/);
-});
-
-test('the supplied calculator models every requested event cost', () => {
-  for (const id of ['platformFeePct', 'model-per-person', 'model-flat', 'model-percentage', 'model-hybrid', 'ticketRows', 'addTicket', 'expenseRows', 'depositRows']) {
-    assert.match(html, new RegExp(`id="${id}"`), `${id} is missing`);
-  }
-  assert.match(html, /function computeVenueFee/);
-  assert.match(html, /function recalc/);
-});
-
-test('multiple ticket types produce a per-style break-even mix', () => {
-  assert.match(html, /var state = \{ tickets:\[\], expenses:\[\], deposits:\[\] \}/);
-  assert.match(html, /function renderTicketRows/);
-  assert.match(html, /function allocateTicketMix/);
-  assert.match(html, /function findBreakEven/);
-  assert.match(html, /id="be-breakdown"/);
-  assert.match(html, /Uses the mix of ticket types currently sold/);
-});
-
-test('ticket profit breakdown reconciles expenses and profit by tier', () => {
-  for (const id of ['ticket-profit-breakdown', 'profit-expenses', 'profit-result', 'ticket-profit-list']) {
-    assert.match(html, new RegExp(`id="${id}"`), `${id} is missing`);
-  }
-  assert.match(html, /function renderTicketProfitBreakdown/);
-  assert.match(html, /allocatedCosts = totalCosts \* \(ticket\.revenue \/ gross\)/);
-  assert.match(html, /renderTicketProfitBreakdown\(gross, platformFees \+ totalExpenses, netProfit\)/);
-  assert.match(html, /Expenses per ticket/);
-  assert.match(html, /profitPerTicket = tierProfit \/ ticket\.sold/);
-});
-
-test('deposits can be included in or added on top of venue cost', () => {
-  assert.match(html, /class="deposit-extra"/);
-  assert.match(html, /addedOnTop/);
-  assert.match(html, /var venueCost = venueFee \+ extraDeposits/);
-  assert.match(html, /var balance = venueFee - includedDeposits/);
-  assert.match(html, /id="out-depositIncluded"/);
-  assert.match(html, /id="out-depositExtra"/);
-  assert.match(html, /What “On top” means:/);
-});
-
-test('venue model controls reveal only their matching fields', () => {
-  assert.match(html, /document\.querySelectorAll\('\[data-model-fields\]'\)/);
-  assert.match(html, /box\.classList\.toggle\('active'/);
-  assert.match(html, /\.model-fields\{ display:none/);
-  assert.match(html, /\.model-fields\.active\{ display:block/);
-});
-
-test('break-even, local persistence, clear and print actions are included', () => {
-  assert.match(html, /id="be-tickets"/);
-  assert.match(html, /localStorage\.setItem/);
-  assert.match(html, /function clearExamples/);
-  assert.match(html, /window\.print\(\)/);
-});
-
-test('desktop and mobile layouts are responsive and touch friendly', () => {
-  assert.match(html, /@media \(max-width:980px\)/);
-  assert.match(html, /@media \(max-width:640px\)/);
-  assert.match(html, /@media \(max-width:480px\)/);
-  assert.match(html, /min-height:44px/);
-  assert.match(html, /\.field-grid[\s\S]*grid-template-columns:1fr/);
-});
-
-test('night, daylight and printable themes are self-contained', () => {
-  assert.match(html, /\[data-theme="daylight"\]/);
+  assert.match(html, /<script src="calc\.js"><\/script>/);
+  assert.match(html, /Berkshire\+Swash/);
+  assert.match(html, /--lmas-navy:\s*#1B2452/);
+  assert.match(html, /--lmas-hot-pink:\s*#FF69B4/);
+  assert.match(html, /prefers-reduced-motion/);
   assert.match(html, /@media print/);
-  assert.match(html, /--on-surface:#111111 !important/);
-  assert.match(html, /--grain-op:0 !important/);
-});
-
-test('brand wordmark follows the approved naming rule', () => {
-  assert.match(html, />LET'S MAKE</);
-  assert.match(html, /> A SCENE</);
+  assert.match(html, /id="rabbit"/);
+  assert.match(html, /role="img"/);
   assert.doesNotMatch(html, /LET'S MAKE A SCENE[!.]/i);
-  assert.doesNotMatch(html, /\bR\.I\.P\.E\b/i);
 });
